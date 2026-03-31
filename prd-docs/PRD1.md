@@ -1,45 +1,74 @@
-# PRD 1 — Baseline RAG Stack
+# PRD 1 — Baseline RAG Systems and Benchmark Harness
 
 ## Project name
 
-**Baseline RAG Infrastructure for Contamination-Aware Evaluation**
+**Baseline RAG Systems for Contamination-Aware Evaluation**
 
 ## Purpose
 
-Build one or two strong, reproducible baseline RAG pipelines that will serve as the fixed reference systems for later contamination-focused evaluation and controller development.
+Build a small set of strong, reproducible baseline RAG systems and a benchmark harness that will serve as the fixed reference point for all later contamination-focused work.
 
-This stage is not about inventing a new method. It is about establishing a trustworthy baseline stack, consistent logging, strong test discipline, and a clean evaluation interface.
+This stage is not about inventing a new method.
+It is about building the baseline systems that later work must beat.
 
-The implementation will use **FlashRAG** as the underlying research harness for retrieval, reranking, generation, and benchmark execution where practical. However, FlashRAG will be treated as an execution framework, not the source of truth for this project’s benchmark semantics, schemas, logging contracts, or evaluation definitions. ([arXiv][1])
+PRD 1 should answer a narrow question:
+
+> What happens when a competent but standard RAG stack is run across ordinary factual QA, ambiguity-heavy QA, and conflicting-evidence QA, with enough logging and evaluation structure to support later controller insertion?
 
 ## Why this stage exists
 
-Before designing a contamination-aware controller, we need to know:
+Before building a contamination-aware controller, we need a baseline stack that tells us:
 
-* how a competent RAG system behaves on clean and noisy inputs,
-* where it fails,
-* what artifacts and logs are available for later control decisions,
-* whether the failure mode is visible in practice,
-* and whether the baseline itself is stable enough to support later scientific claims.
+* how ordinary RAG behaves on clean retrieval,
+* how it degrades under ambiguity and conflicting evidence,
+* which failure modes are already visible without any special controller,
+* what artifacts are available between retrieval and generation,
+* and which baseline comparisons later stages must preserve.
 
-If this baseline is weak, inconsistent, or under-tested, later controller results will be hard to interpret.
+If PRD 1 is weak, later gains will be uninterpretable.
+
+If PRD 1 is underspecified, later evaluation will drift.
 
 ---
 
-# 1. Goals
+# 1. Core thesis of this stage
+
+PRD 1 is not “build one generic RAG pipeline.”
+
+PRD 1 is:
+
+1. build a **baseline family** of standard RAG variants,
+2. run them on a **benchmark ladder** that becomes progressively more aligned with the project’s target failure mode,
+3. freeze their interfaces, outputs, and logging so later controller work can plug into the exact same harness.
+
+That means PRD 1 must own both:
+
+* the **systems**
+* and the **evaluation harness**
+
+but not the contamination-aware controller itself.
+
+---
+
+# 2. Goals
 
 ## Primary goal
 
-Implement a fixed, reproducible RAG pipeline that can answer questions from retrieved evidence and save all intermediate artifacts needed for later analysis.
+Implement a reproducible baseline RAG evaluation stack that can run multiple standard baseline systems across multiple benchmark types and save all intermediate artifacts needed for downstream contamination analysis.
 
 ## Secondary goals
 
-* support comparison across one or two baseline variants,
-* log retrieval outputs, rankings, prompts, answers, and confidence-related signals,
-* create a clean interface for downstream benchmarking,
-* make the stack modular so later controller insertion is easy,
-* ensure the baseline is robust enough to run reliably on the cluster,
-* ensure core behavior is protected by tests.
+* compare at least three baseline variants with fixed prompts and configs,
+* establish a benchmark ladder from sanity-check QA to ambiguity and conflicting-evidence QA,
+* support both single-answer and multi-answer tasks,
+* log retrieval, reranking, prompt construction, answer generation, and evaluation artifacts in structured form,
+* make controller insertion easy later by keeping a clean separation between:
+
+  * retrieval,
+  * reranking,
+  * context assembly,
+  * generation,
+  * evaluation.
 
 ## Non-goals
 
@@ -47,275 +76,411 @@ This stage will **not**:
 
 * implement contamination scoring,
 * implement subset selection,
-* implement abstention policies beyond standard model behavior,
-* tune for state-of-the-art leaderboard performance,
-* build a full production service,
-* let framework defaults silently define benchmark behavior.
+* implement abstention policies beyond baseline model behavior,
+* implement the project’s proposed controller,
+* tune for leaderboard performance at all costs,
+* build a production API or serving layer,
+* evaluate enterprise black-box systems as a required milestone.
 
 ---
 
-# 2. Development philosophy
+# 3. What PRD 1 must produce
 
-## 2.1 Test-driven development is required
+PRD 1 must produce three things:
 
-This project will use **test-driven development** as a default engineering method.
+## A. A baseline system matrix
 
-New functionality should be developed using a strict:
+At minimum:
 
-**red → green → refactor**
+* **Baseline 0 — LLM-only / no retrieval control**
+* **Baseline A — Vanilla RAG**
+* **Baseline B — Hybrid RAG**
+* **Baseline C — Hybrid RAG + reranker**
+* **Baseline D — Reduced-context RAG**
 
-loop:
+Not every one of these must be treated as a headline system in every table, but all except Baseline 0 should exist in the harness, and at least A/B/C must be run in the main PRD 1 deliverable.
 
-1. write a failing test for the intended behavior,
-2. implement the smallest change needed to make the test pass,
-3. refactor only after the relevant tests are green.
+## B. A benchmark ladder
 
-Tests are part of the product, not a cleanup step.
+PRD 1 should not jump straight to the hardest benchmark only.
 
-## 2.2 What must be protected by tests
+It should use a staged benchmark ladder:
 
-The following must be protected by tests:
+* **Tier 0 — NQ or comparable ordinary factual QA sanity benchmark**
+* **Tier 1 — AmbigDocs**
+* **Tier 2 — FaithEval**
+* **Tier 3 — RAMDocs**
 
-* benchmark input schema normalization,
-* retrieval and reranking output schemas,
-* prompt construction behavior,
-* generation output parsing,
-* evaluation logic,
-* logging and artifact writing,
-* reproducibility guarantees,
-* cluster execution entrypoints,
-* controller insertion compatibility.
+## C. A normalized evaluation interface
 
-## 2.3 Engineering rules
+PRD 1 must support:
 
-* Do not weaken tests to accommodate buggy behavior.
-* Every bug fix must add a regression test that would have caught it.
-* Prefer small, explicit, verifiable changes.
-* Prefer adapters over deep framework rewrites.
-* Prefer deterministic fixtures and local smoke tests before cluster-scale execution.
+* single-answer factual QA
+* multi-answer ambiguous QA
+* unknown / unanswerable outputs
+* context-faithfulness style evaluation where applicable
+
+This is mandatory. A single EM-only evaluator is not enough.
 
 ---
 
-# 3. Execution environment
+# 4. Benchmark ladder
 
-## 3.1 Cluster-first execution
+## Tier 0 — Sanity benchmark
 
-This baseline stack is intended to run primarily on the lab’s **cluster**, not just on a laptop.
+### Dataset
 
-The codebase must therefore be:
+**NQ** or another standard short-answer factual QA benchmark.
 
-* CLI-first,
-* config-driven,
-* batchable,
-* shardable,
-* resumable where possible,
-* non-interactive by default,
-* explicit about cache, output, and scratch paths.
+### Purpose
 
-## 3.2 Local execution still matters
+Use this tier to verify:
 
-The project must also support:
+* the stack runs end-to-end,
+* retrieval and reranking are not broken,
+* stronger retrieval variants are not obviously degenerate,
+* clean factual QA performance is reasonable.
 
-* a tiny local smoke-test configuration,
-* fixture-based integration tests,
-* fast debugging without cluster submission.
+### Expected role
 
-Cluster is the default for real runs. Local is required for development safety.
+This is not the project’s main scientific benchmark.
+It is the baseline sanity check.
+
+## Tier 1 — Core project benchmark
+
+### Dataset
+
+**AmbigDocs**
+
+### Purpose
+
+This is the first benchmark that directly reflects the project’s target failure mode.
+
+Use it to test whether baseline RAG systems can handle:
+
+* same-name entity ambiguity,
+* multiple correct answers for a single surface-form query,
+* the need to disambiguate entities explicitly rather than merge them.
+
+### Expected role
+
+This is the **core benchmark for PRD 1**.
+
+If the baseline harness cannot run AmbigDocs cleanly, PRD 1 is not done.
+
+## Tier 2 — Robustness benchmark
+
+### Dataset
+
+**FaithEval**
+
+### Purpose
+
+Use it to test whether baseline systems remain faithful to context under:
+
+* unanswerable contexts,
+* inconsistent contexts,
+* counterfactual contexts.
+
+### Expected role
+
+This is the main check that stronger ambiguity handling is not achieved by simply becoming sloppier or less context-faithful elsewhere.
+
+## Tier 3 — Stretch benchmark
+
+### Dataset
+
+**RAMDocs**
+
+### Purpose
+
+Use it to stress-test the baseline systems under mixed conflict:
+
+* ambiguity,
+* misinformation,
+* noise,
+* uneven support across answers.
+
+### Expected role
+
+This is the hardest benchmark in PRD 1 and should be treated as the forward-looking stress test.
+
+It is preferred for MVP-plus and required if resources allow.
 
 ---
 
-# 4. Success criteria
+# 5. Baseline system matrix
+
+## Baseline 0 — LLM-only control
+
+### Description
+
+Answer the question without retrieval.
+
+### Purpose
+
+Provides a non-RAG control so later results can distinguish:
+
+* retrieval helping,
+* retrieval hurting,
+* retrieval introducing new failure modes.
+
+### Required?
+
+Optional for minimal implementation, but strongly recommended.
+
+---
+
+## Baseline A — Vanilla RAG
+
+### Description
+
+* retrieve top-k passages
+* no reranking
+* concatenate retrieved passages in retrieval order
+* answer from full retrieved context
+
+### Purpose
+
+This is the weakest serious RAG baseline.
+
+It gives the project a plain reference point.
+
+### Required?
+
+Yes.
+
+---
+
+## Baseline B — Hybrid RAG
+
+### Description
+
+* retrieve top-k passages using hybrid lexical + dense retrieval
+* no reranking
+* answer from full retrieved context
+
+### Purpose
+
+This should be the minimum “respectable” baseline.
+
+### Required?
+
+Yes.
+
+---
+
+## Baseline C — Hybrid RAG + reranker
+
+### Description
+
+* hybrid retrieve top-k
+* rerank retrieved passages
+* answer from reranked full context
+
+### Purpose
+
+This is the main strong baseline for PRD 1.
+
+### Required?
+
+Yes.
+
+---
+
+## Baseline D — Reduced-context RAG
+
+### Description
+
+* retrieve and optionally rerank as above
+* answer from top-1 or top-2 passages only
+
+### Purpose
+
+This is a diagnostic baseline.
+
+It tests whether some gains later could come from “just use less context.”
+
+### Required?
+
+Yes in code, preferred in experiments.
+
+---
+
+## Optional external comparator
+
+### Example
+
+Enterprise or managed system such as Bedrock/Kendra.
+
+### Purpose
+
+Useful as an external point of comparison, but not required for the first reproducible project-owned baseline stack.
+
+### Required?
+
+No.
+
+---
+
+# 6. Success criteria
 
 PRD 1 is complete if all of the following are true:
 
-1. at least one baseline RAG system runs end-to-end on a benchmark dataset using FlashRAG as the underlying research harness,
-2. all retrieved passages, scores, prompts, and outputs are saved in structured **project-defined** form,
-3. runs are reproducible from frozen config files and recorded framework versions,
-4. results can be evaluated automatically without rerunning generation,
-5. the codebase is modular enough that a controller can later be inserted between retrieval/reranking and generation,
-6. a small qualitative error pack is produced showing representative successes and failures,
-7. the system runs both:
+1. Baseline A, B, and C run end-to-end on at least one split each of Tier 0 and Tier 1 benchmarks.
+2. At least one reduced-context variant runs on the same split as a full-context baseline.
+3. All retrievals, rankings, prompts, answers, and evaluation outputs are saved in structured form.
+4. Runs are reproducible from config files without code edits.
+5. The system supports both single-answer and multi-answer evaluation modes.
+6. A controller could later be inserted between retrieval and generation without rewriting the stack.
+7. A qualitative inspection pack is exported showing representative:
 
-   * as a local smoke-test configuration, and
-   * as a cluster-ready batch configuration,
-8. major modules are covered by tests written under a red → green → refactor workflow.
+   * clean successes,
+   * ambiguity failures,
+   * conflicting-evidence failures.
 
 Preferred:
 
-9. two baseline variants exist, such as:
-
-   * dense or hybrid retrieval without reranking
-   * dense or hybrid retrieval with reranking
-
-10. every bug fixed during implementation adds a regression test.
+8. FaithEval is integrated and run.
+9. RAMDocs is integrated and run.
+10. LLM-only control is included.
+11. Two retrieval settings and two generation-context settings are compared on the same benchmark slice.
 
 ---
 
-# 5. User stories
+# 7. User stories
 
 ## Researcher story
 
-As a researcher, I want a reliable baseline RAG system so that later improvements can be attributed to the contamination-aware controller rather than baseline instability.
+As a researcher, I want a strong but standard baseline family so later gains can be attributed to the contamination-aware controller rather than baseline weakness.
 
 ## Engineering story
 
-As an engineer, I want all intermediate outputs logged in a standard format so that I can later compute contamination features without rewriting the core stack.
+As an engineer, I want standardized artifacts at each stage so I can add contamination scoring later without rewriting the baseline stack.
 
 ## Evaluation story
 
-As an evaluator, I want reproducible configs and standardized outputs so I can compare multiple systems on the same examples.
+As an evaluator, I want dataset-specific scoring adapters behind one common interface so I can compare systems fairly across ordinary QA, ambiguity QA, and conflicting-evidence QA.
 
-## Infrastructure story
+## Analysis story
 
-As a cluster user, I want runs to launch from CLI and config files, save complete manifests, and fail in inspectable ways so that large experiments are manageable.
+As an analyst, I want enough metadata and logging to inspect whether a failure came from:
 
----
-
-# 6. Framework and system requirements
-
-## 6.1 Framework stance
-
-Use **FlashRAG** as the baseline research harness because it is designed for modular RAG experimentation and benchmark comparison. ([arXiv][1])
-
-However:
-
-* FlashRAG does **not** define the project’s benchmark semantics.
-* FlashRAG does **not** define the project’s logging schema.
-* FlashRAG does **not** define the project’s evaluation contract.
-* FlashRAG does **not** define the future controller interface.
-
-The project owns those interfaces.
-
-## 6.2 Framework usage rules
-
-* Pin FlashRAG by commit hash or release tag for reported runs.
-* Save FlashRAG version metadata in every run manifest.
-* Override framework defaults explicitly when they affect retrieval, reranking, prompt construction, truncation, generation settings, or evaluation.
-* If FlashRAG objects do not match project schemas, write adapters. Do not change project schemas to fit framework internals.
-
-## 6.3 High-level pipeline
-
-The baseline pipeline should follow this sequence:
-
-1. load query
-2. normalize query into common project schema
-3. retrieve top-k passages
-4. optionally rerank retrieved passages
-5. construct generation context
-6. generate answer
-7. save all intermediate artifacts
-8. run evaluation
-9. save run manifest and summary outputs
-
-## 6.4 Required components
-
-### Query input layer
-
-Takes benchmark query examples and normalizes them into a common schema.
-
-### Framework adapter layer
-
-Wraps FlashRAG components and maps them to project-defined interfaces and schemas.
-
-Responsibilities:
-
-* normalize input examples into FlashRAG-compatible format,
-* convert retrieval outputs into project retrieval schema,
-* convert reranking outputs into project rerank schema,
-* capture prompt and generation metadata,
-* preserve example IDs and provenance.
-
-### Retriever
-
-At least one retriever is required.
-
-Recommended options:
-
-* dense retriever
-* hybrid lexical + dense retriever
-
-### Optional reranker
-
-A reranker should be easy to toggle on or off.
-
-### Generator
-
-One fixed answer-generation model with a stable prompt template.
-
-### Evaluation module
-
-Computes answer correctness and stores metrics.
-
-### Logging layer
-
-Stores intermediate artifacts in structured form.
-
-### Run manifest / provenance layer
-
-Stores:
-
-* config,
-* git commit,
-* FlashRAG version,
-* model identifiers,
-* dataset version,
-* seed,
-* cluster job metadata,
-* environment information,
-* timestamped output paths.
+* retrieval quality,
+* ambiguity,
+* conflicting evidence,
+* too much context,
+* or the generator itself.
 
 ---
 
-# 7. Baseline variants
+# 8. High-level pipeline
 
-## Required minimum baseline
+Every baseline should follow the same stage structure:
 
-### Baseline A — Standard RAG
+1. load benchmark example
+2. normalize example into common schema
+3. retrieve candidate passages
+4. optionally rerank candidate passages
+5. choose passage subset according to baseline definition
+6. build generation prompt deterministically
+7. generate answer
+8. parse answer into task-specific output format
+9. evaluate answer with dataset-specific scorer
+10. save all intermediate artifacts
 
-* retrieve top-k
-* optionally pass in ranked order directly
-* answer from full retrieved context
+The point is that all baseline variants differ only in a few controlled places:
 
-## Preferred second baseline
-
-### Baseline B — Standard RAG + reranking
-
-* retrieve top-k from retriever
-* rerank top-k
-* answer from reranked full context
-
-## Optional third baseline
-
-### Baseline C — Reduced-context RAG
-
-* retrieve top-k
-* answer from top-1 or top-2 only
-
-This is useful later as a simple baseline for whether “less context” helps.
+* retrieval type
+* reranking on/off
+* number of passages used
+* answer formatting mode
 
 ---
 
-# 8. Functional specs
+# 9. Required components
 
-## 8.1 Input schema
+## 9.1 Query input layer
 
-Each query example should have a normalized structure like:
+Normalizes benchmark examples into a common schema.
+
+Must support:
+
+* single gold answer
+* multiple gold answers
+* unanswerable / abstain-compatible targets
+* dataset-specific metadata
+
+## 9.2 Retriever layer
+
+At least two retriever settings should be supported:
+
+* dense retrieval
+* hybrid lexical + dense retrieval
+
+If only one can be implemented at first, make hybrid the preferred default.
+
+## 9.3 Reranker layer
+
+A reranker must be easy to toggle on or off by config.
+
+## 9.4 Context assembly layer
+
+Must support:
+
+* full retrieved set
+* reranked full retrieved set
+* reduced-context top-1
+* reduced-context top-2
+
+Deterministic formatting is required.
+
+## 9.5 Generator layer
+
+One fixed answer-generation model for the main PRD 1 runs.
+
+Requirements:
+
+* fixed prompt template family
+* temperature 0 or near-greedy decoding
+* stable answer formatting instructions
+
+## 9.6 Output parser layer
+
+Must support at least three answer modes:
+
+* `single`
+* `multi`
+* `unknown_or_abstain`
+
+## 9.7 Evaluation layer
+
+Must dispatch to dataset-specific scorers while presenting a uniform outer interface.
+
+---
+
+# 10. Required normalized schema
+
+## 10.1 Input schema
 
 ```json
 {
   "example_id": "ex_0001",
-  "question": "When was Company X acquired by Company Y?",
-  "gold_answer": "2019",
+  "question": "In which year was Michael Jordan born?",
+  "task_type": "multi_answer_qa",
+  "gold": {
+    "single_answer": null,
+    "multi_answers": ["    "multi_answers": ["1963", "1956"],
+    "unknown_allowed": false
+  },
   "metadata": {
-    "dataset": "dataset_name",
+    "dataset": "ambigdocs",
     "split": "dev"
   }
 }
 ```
 
-## 8.2 Retrieval output schema
-
-The retriever must return at least:
+## 10.2 Retrieval output schema
 
 ```json
 {
@@ -332,9 +497,7 @@ The retriever must return at least:
 }
 ```
 
-## 8.3 Reranker output schema
-
-If reranking is enabled:
+## 10.3 Reranker output schema
 
 ```json
 {
@@ -352,539 +515,379 @@ If reranking is enabled:
 }
 ```
 
-## 8.4 Prompt construction
-
-The system must construct prompts from:
-
-* question
-* retrieved passages in order
-* fixed system instructions
-* fixed answer formatting instructions
-
-Prompt construction must be deterministic given config and retrieved order.
-
-## 8.5 Generation output schema
+## 10.4 Prompt record schema
 
 ```json
 {
   "example_id": "ex_0001",
-  "final_answer": "Company Y acquired Company X in 2019.",
-  "raw_model_output": "...",
+  "baseline_name": "hybrid_rerank_full",
+  "answer_mode": "multi",
   "used_passage_ids": ["p3", "p1", "p4", "p2"],
-  "generation_metadata": {
-    "model_name": "model_x",
-    "temperature": 0.0
+  "prompt_text": "...",
+  "prompt_metadata": {
+    "model_name": "generator_x",
+    "temperature": 0.0,
+    "max_context_passages": 4
   }
 }
 ```
 
-## 8.6 Evaluation output schema
+## 10.5 Generation output schema
 
 ```json
 {
   "example_id": "ex_0001",
-  "is_correct": true,
-  "score": 1.0,
-  "normalized_prediction": "2019",
-  "normalized_gold": "2019"
+  "raw_model_output": "...",
+  "parsed_output": {
+    "single_answer": null,
+    "multi_answers": ["1963", "1956"],
+    "unknown": false
+  }
+}
+```
+
+## 10.6 Evaluation output schema
+
+```json
+{
+  "example_id": "ex_0001",
+  "dataset": "ambigdocs",
+  "baseline_name": "hybrid_rerank_full",
+  "metrics": {
+    "exact_match": null,
+    "normalized_match": null,
+    "multi_answer_score": 1.0,
+    "answer_category": "complete"
+  }
 }
 ```
 
 ---
 
-# 9. Logging requirements
+# 11. Dataset-specific output contracts
 
-This stage lives or dies on logging. Save more than you think you need.
+## 11.1 Ordinary factual QA contract
 
-## 9.1 Required logs per example
+For NQ-like tasks:
 
-* query text
-* gold answer
-* retrieved passages
-* raw retrieval scores
-* reranked passages, if applicable
-* rerank scores, if applicable
-* full generation prompt
-* final answer
+* parse a single short answer
+* compute normalized exact match or equivalent
+
+## 11.2 Ambiguity QA contract
+
+For AmbigDocs-like tasks:
+
+* allow multiple correct answers
+* preserve explicit entity disambiguation when the benchmark requires it
+* support categories such as:
+
+  * complete
+  * partial
+  * ambiguous
+  * merged
+  * no answer
+
+## 11.3 Context-faithfulness contract
+
+For FaithEval-like tasks:
+
+* support outputs that may be:
+
+  * correct,
+  * incorrect,
+  * unknown,
+  * or task-specific depending on the benchmark adapter
+* preserve ability to inspect answerability separately from correctness
+
+## 11.4 Mixed-conflict contract
+
+For RAMDocs-like tasks:
+
+* allow multiple correct answers when ambiguity is genuine
+* allow unknown when context is unusable
+* do not force a single-answer parser on inherently mixed examples
+
+---
+
+# 12. Prompting requirements
+
+## Core prompting rule
+
+PRD 1 prompts should be simple and fixed.
+
+Do not build benchmark-specific reasoning tricks into the main baseline prompts.
+
+The baseline should be competent, but standard.
+
+## Required prompt families
+
+### Prompt family A — single-answer grounded QA
+
+Use for NQ-like settings.
+
+### Prompt family B — multi-answer grounded QA
+
+Use for ambiguity-heavy and mixed-conflict settings.
+
+Required behavior:
+
+* if there are multiple clearly supported answers, provide all of them
+* if the context does not support an answer, say unknown
+* do not invent support outside the provided documents
+
+### Prompt family C — unknown-compatible grounded QA
+
+Use for unanswerable or strongly context-faithfulness-oriented settings.
+
+## Prompt design constraints
+
+* deterministic formatting
+* no hidden benchmark-specific heuristics
+* no controller-like passage filtering inside the prompt
+* no test-time self-review loop as part of the baseline
+
+---
+
+# 13. Evaluation requirements
+
+## Required metrics across the harness
+
+Every run should report:
+
+* accuracy or task-correctness metric
+* unknown / abstention rate where applicable
+* answerable-only accuracy where applicable
+* per-dataset breakdown
+* per-baseline breakdown
+
+## Required benchmark-specific reporting
+
+### NQ-like
+
+* normalized EM
+* accuracy
+
+### AmbigDocs-like
+
+* complete / partial / ambiguous / merged / no-answer breakdown
+* main accuracy summary derived from dataset scorer
+
+### FaithEval-like
+
+* task-wise reporting for:
+
+  * unanswerable
+  * inconsistent
+  * counterfactual
+* overall summary
+
+### RAMDocs-like
+
+* overall exact match or task metric
+* breakdown by conflict subtype if available from adapter
+
+---
+
+# 14. Logging requirements
+
+This stage lives or dies on logging.
+
+## Required logs per example
+
+* normalized input example
+* raw retrieved passages
+* retrieval scores
+* reranked passages, if any
+* rerank scores, if any
+* final used passage set
+* full prompt text
 * raw model output
-* model metadata
+* parsed output
 * evaluation result
-* run config hash or ID
+* run config ID or hash
 
-## 9.2 Required logs per run
+## Preferred logs
 
-* project git commit hash
-* FlashRAG version / commit or release tag
-* cluster job ID if applicable
-* hostname / execution environment label
-* resolved config file
-* dataset version or data manifest
-* retrieval index identifier
-* reranker identifier
-* generator identifier
-* seed
-* timestamp
-* output directory
+* token counts by stage
+* latency by stage
+* truncated-context indicator
+* passage count used
+* answer mode used
+* parser warnings
+* confidence proxy if available
 
-## 9.3 Preferred logs
-
-* token counts
-* latency per stage
-* truncated-context indicators
-* prompt length
-* generation probability or confidence proxy if available
-* stage-specific wall-clock times
-* GPU/CPU device info
-* cache directory used
-* retries / failures by stage
-* dry-run indicator
-* shard index or job-array index
-
-## 9.4 File outputs
+## Required file outputs
 
 At minimum:
 
-* `predictions.jsonl`
+* `inputs.jsonl`
 * `retrievals.jsonl`
+* `reranks.jsonl`
 * `prompts.jsonl`
+* `predictions.jsonl`
 * `evaluations.jsonl`
 * `run_config.yaml`
-* `run_manifest.json`
 * `summary_metrics.json`
 
 ---
 
-# 10. Configuration requirements
+# 15. Configuration requirements
 
-All major behaviors must be config-driven.
+All major behavior must be config-driven.
 
-## 10.1 Required config fields
+## Required config fields
 
-* framework name and version pin
-* dataset name
+* dataset
 * split
-* retriever type
-* retriever params
-* top-k
-* reranker on/off
-* reranker params
-* generator model
-* prompt template ID
-* temperature
-* max tokens
-* output directory
-* random seed
-* local vs cluster execution mode
-* cache directory
-* scratch directory
-* output root
-* shard ID / job array parameters if used
-* dry-run mode
-* number of workers
-* cluster resource profile
-* retry policy
-* test fixture mode
+* retriever_type
+* reranker_enabled
+* generator_model
+* prompt_family
+* top_k_retrieval
+* top_k_after_rerank
+* context_strategy
+* answer_mode
+* output_dir
+* random_seed
 
-## 10.2 Example config
+## Required invariant
 
-```yaml
-run_name: baseline_rag_v1
-
-framework:
-  name: flashrag
-  version_pin: "<commit-or-tag>"
-
-execution:
-  mode: cluster
-  dry_run: false
-  cache_dir: /scratch/$USER/flashrag_cache
-  scratch_dir: /scratch/$USER/rag_tmp
-  output_root: /scratch/$USER/rag_outputs
-  num_workers: 4
-  shard_id: 0
-  num_shards: 1
-  resource_profile: standard_gpu
-  retry_policy: none
-  fixture_mode: false
-
-dataset:
-  name: benchmark_dev
-  split: dev
-
-retriever:
-  type: hybrid
-  top_k: 8
-
-reranker:
-  enabled: true
-  model: bge_reranker
-  top_k_after_rerank: 5
-
-generator:
-  model_name: gpt_4_1_or_equivalent
-  temperature: 0.0
-  max_tokens: 200
-
-prompt:
-  template_id: qa_grounded_v1
-
-logging:
-  save_prompts: true
-  save_raw_outputs: true
-
-seed: 42
-```
+Two runs with the same config and seed should be rerunnable without code edits.
 
 ---
 
-# 11. Evaluation requirements
+# 16. Recommended default choices
 
-## 11.1 Required evaluation capabilities
+For pragmatic v1:
 
-The system must support automatic scoring for at least one QA-style benchmark.
-
-### Required metrics
-
-* exact match or normalized match
-* accuracy
-* optional token-level F1 if applicable
-
-### Preferred metrics
-
-* answer length
-* citation or grounding heuristics if available
-* agreement between raw answer and normalized extracted answer
-
-## 11.2 Evaluation constraints
-
-* Scoring should be separated from generation so predictions can be rescored later without rerunning the model.
-* Saved artifacts must be sufficient to rerun evaluation independently.
-* Evaluation code must be test-covered.
+* **Retriever default:** hybrid retrieval
+* **Second retriever setting:** dense-only
+* **Reranker default:** enabled for strong baseline
+* **Generator:** one stable high-quality model
+* **Decoding:** temperature 0
+* **Top-k retrieval:** 8 to 10
+* **Top-k after rerank:** 4 to 6
+* **Reduced-context diagnostic:** top-2
+* **Tier 0 benchmark:** NQ
+* **Tier 1 benchmark:** AmbigDocs
+* **Tier 2 benchmark:** FaithEval
+* **Tier 3 benchmark:** RAMDocs if resources allow
 
 ---
 
-# 12. Architecture requirements
+# 17. Suggested implementation phases
 
-## 12.1 Design principle
+## Phase 1
 
-The code should be organized so the future controller can be inserted **between retrieval/reranking and generation**.
+Implement:
 
-### Desired interface
+* common schema
+* Vanilla RAG
+* Hybrid RAG
+* NQ adapter
+* AmbigDocs adapter
+* deterministic prompting
+* structured logging
 
-```python
-retrieved = retrieve(query)
-reranked = rerank(retrieved, query)
-context_bundle = build_context_bundle(query, reranked)
-answer = generate(context_bundle)
-```
+## Phase 2
 
-Later, this should become:
+Add:
 
-```python
-retrieved = retrieve(query)
-reranked = rerank(retrieved, query)
-control_decision = controller(query, reranked)
-context_bundle = build_context_bundle(query, control_decision.selected_passages)
-answer = generate(context_bundle)
-```
+* reranker
+* reduced-context baseline
+* FaithEval adapter
+* multi-answer parser improvements
 
-That means passage objects and ranking metadata need to stay clean and reusable.
+## Phase 3
 
-## 12.2 Controller-compatibility requirement
+Add:
 
-The baseline must preserve enough structure that a later controller can consume:
-
-* ranked passage lists,
-* retrieval scores,
-* rerank scores,
-* provenance metadata,
-* prompt context candidates,
-* run-level config and manifest metadata.
+* RAMDocs adapter
+* stronger reporting
+* inspection scripts
+* benchmark comparison pack
 
 ---
 
-# 13. Cluster execution requirements
+# 18. Implementation tasks
 
-## 13.1 Design principle
+## Task group A — schemas and adapters
 
-All main runs must be executable on the cluster through a non-interactive CLI.
+* finalize common example schema
+* implement NQ adapter
+* implement AmbigDocs adapter
+* implement FaithEval adapter
+* implement RAMDocs adapter
 
-## 13.2 Requirements
+## Task group B — retrieval
 
-* no notebook-only execution paths
-* all experiments launchable from config files
-* support for batch execution over shards or dataset splits
-* output directories must be unique, deterministic, and collision-safe
-* failed runs should leave partial artifacts in an inspectable state
-* support a tiny local config for quick debugging before cluster submission
-* cluster paths and caches must be configurable
-* run scripts should support environment bootstrapping through a clear entrypoint
+* implement dense retrieval wrapper
+* implement hybrid retrieval wrapper
+* standardize retrieval artifact format
 
-## 13.3 Preferred requirements
-
-* support job-array execution
-* support resume-from-artifacts for long runs
-* support per-shard metric merging
-* support manifest files for multi-run sweeps
-
----
-
-# 14. Testing requirements
-
-## 14.1 Required test layers
-
-### Unit tests
-
-For:
-
-* schema normalization
-* prompt assembly
-* parser behavior
-* scoring functions
-* config loading
-* metadata hashing
-* path resolution
-* manifest generation
-
-### Contract tests
-
-For:
-
-* `predictions.jsonl`
-* `retrievals.jsonl`
-* `prompts.jsonl`
-* `evaluations.jsonl`
-* `run_manifest.json`
-* config and artifact completeness
-
-These tests verify schema validity and required fields.
-
-### Integration tests
-
-For:
-
-* end-to-end pipeline execution on a tiny fixture dataset,
-* retrieval → rerank → prompt → generate → evaluate → log flow,
-* adapter correctness,
-* controller-ready interface compatibility.
-
-### Regression tests
-
-For:
-
-* previously observed schema bugs,
-* prompt formatting bugs,
-* ordering bugs,
-* logging omissions,
-* retrieval / rerank metadata mismatches,
-* run manifest omissions.
-
-### Cluster smoke tests
-
-For:
-
-* CLI entrypoints,
-* config parsing,
-* output directory creation,
-* environment variable handling,
-* dry-run and tiny-run submission modes.
-
-## 14.2 Test quality rules
-
-* Tests should prefer deterministic fixtures.
-* Tests should check outputs and contracts, not just process completion.
-* Production code should not contain hidden test-only logic.
-* All major modules should be introduced with tests.
-* Every bug fix should introduce a regression test.
-
----
-
-# 15. Recommended code modules
-
-Suggested structure:
-
-```text
-rag_project/
-  configs/
-    local/
-    cluster/
-    tests/
-  data/
-  src/
-    adapters/
-      flashrag/
-    data_loading/
-    retrieval/
-    reranking/
-    prompting/
-    generation/
-    evaluation/
-    logging/
-    manifests/
-    pipelines/
-    cluster/
-    utils/
-  tests/
-    unit/
-    contracts/
-    integration/
-    regression/
-    cluster_smoke/
-  scripts/
-    run_baseline.py
-    run_local_smoke.py
-    run_cluster_job.py
-    evaluate_predictions.py
-    inspect_examples.py
-    validate_run_artifacts.py
-  outputs/
-```
-
-This is intended to stay modular and explicit, closer to your existing style of separating schema, provider, prompt, and parsing responsibilities rather than hiding everything in one orchestration file. ([github.com](https://github.com/mohanwugupta/God-s-Reach/tree/main/designspace_extractor/llm))
-
-## Module responsibilities
-
-### `adapters/flashrag/`
-
-Thin wrappers that translate between project schemas and FlashRAG objects.
-
-### `data_loading/`
-
-Load benchmark datasets and normalize them.
-
-### `retrieval/`
-
-Retriever wrappers and retrieval utilities.
-
-### `reranking/`
-
-Reranker wrappers and ranking utilities.
-
-### `prompting/`
-
-Prompt templates and context formatting.
-
-### `generation/`
-
-LLM call wrapper and output parsing.
-
-### `evaluation/`
-
-Scoring and normalization functions.
-
-### `logging/`
-
-Structured JSONL writers, run metadata, summaries.
-
-### `manifests/`
-
-Run manifests, provenance capture, config hashing, environment logging.
-
-### `pipelines/`
-
-End-to-end orchestration.
-
-### `cluster/`
-
-Cluster submission helpers, resource profiles, path resolution, shard handling.
-
----
-
-# 16. Implementation tasks
-
-## Task group A: testing scaffolding
-
-* set up pytest structure
-* add unit, contract, integration, regression, and cluster smoke test directories
-* implement fixture dataset and tiny local smoke config
-* add schema contract tests before pipeline implementation
-
-## Task group B: framework integration
-
-* pin FlashRAG version
-* implement FlashRAG adapter wrappers
-* test adapter conversions into project schemas
-* create minimal baseline run through FlashRAG on a fixture dataset
-
-## Task group C: dataset ingestion
-
-* implement dataset loader
-* normalize examples to common schema
-* write dataset preview script
-
-## Task group D: retrieval
-
-* implement retriever wrapper
-* return top-k passages with scores
-* save retrieval outputs
-
-## Task group E: reranking
+## Task group C — reranking
 
 * implement reranker wrapper
-* rerank retrieval outputs
-* save reranked lists
+* standardize rerank artifact format
+* add reranker toggle in config
 
-## Task group F: prompt construction
+## Task group D — context assembly
 
-* implement fixed grounded-QA prompt template
-* format retrieved passages deterministically
+* implement full-context assembly
+* implement reduced-context assembly
+* ensure deterministic ordering and formatting
 
-## Task group G: generation
+## Task group E — prompting and generation
 
-* implement answer generation wrapper
-* save raw outputs and parsed answer
+* implement single-answer prompt family
+* implement multi-answer prompt family
+* implement unknown-compatible prompt family
+* implement generation wrapper
+* save raw and parsed outputs
 
-## Task group H: evaluation
+## Task group F — parsing and evaluation
 
-* implement normalized answer scoring
-* generate summary metrics
+* implement single-answer parser
+* implement multi-answer parser
+* implement unknown parser
+* implement dataset-specific scorers
+* export summary metrics
 
-## Task group I: orchestration
+## Task group G — orchestration
 
 * implement config-driven run script
-* save all artifacts under run directory
-* capture run manifest
+* implement run directory structure
+* save all structured artifacts
 
-## Task group J: inspection
+## Task group H — inspection
 
-* implement script that samples successes and failures
-* export small error pack for manual review
-
-## Task group K: cluster execution
-
-* implement cluster-ready CLI entrypoint
-* implement cluster config profile
-* implement run manifest capture with job metadata
-* test output directory behavior under batch execution
-
-## Task group L: regression hardening
-
-* add regression tests for each bug found during implementation
-* validate that saved artifacts are sufficient for downstream controller work
+* implement sampling script for representative cases
+* export qualitative pack for manual review
 
 ---
 
-# 17. Exit criteria
+# 19. Exit criteria
 
 PRD 1 is done when:
 
-1. `run_baseline.py` completes end-to-end on at least one benchmark split through the FlashRAG-backed execution path,
-2. outputs are saved in structured project-owned files,
-3. summary metrics are computed automatically,
-4. two rerunnable configs work without code changes,
-5. one local smoke config and one cluster config both run successfully,
-6. a qualitative pack of at least 25 examples is exported for inspection,
-7. code paths are ready for later controller insertion,
-8. tests cover core contracts and the end-to-end baseline path.
+1. Baseline A, B, and C can be run from config without code edits.
+2. NQ and AmbigDocs are both supported and evaluated automatically.
+3. At least one reduced-context baseline exists and runs.
+4. Structured artifacts are saved for retrieval, prompt, prediction, and evaluation stages.
+5. Multi-answer outputs are supported in the evaluation harness.
+6. A qualitative inspection pack with at least 25 examples is exported.
+7. The code path clearly supports later controller insertion between retrieval and generation.
 
 Preferred:
 
-9. Baseline A and Baseline B have both been run on the same split.
-10. the run manifest captures enough provenance to rerun the experiment later on the cluster.
+8. FaithEval is integrated and run.
+9. RAMDocs is integrated and run.
+10. LLM-only control is included in the same harness.
+11. A short README explains how to reproduce the main PRD 1 runs.
 
 ---
 
-# 18. Risks and mitigations
+# 20. Risks and mitigations
 
 ## Risk 1
 
@@ -892,105 +895,80 @@ The baseline is too weak, so later controller gains are meaningless.
 
 ### Mitigation
 
-Use a competent retriever and optionally reranker. Do not intentionally cripple the stack.
+Use one strong standard baseline as the anchor:
+hybrid retrieval plus reranking plus stable prompting.
 
 ## Risk 2
 
-The logging is incomplete, so later contamination analysis becomes painful.
+The baseline is too benchmark-specific.
 
 ### Mitigation
 
-Over-log by default.
+Keep one common outer schema and one common run harness, but allow dataset-specific parsers and scorers.
 
 ## Risk 3
 
-The code is too entangled, making controller insertion messy.
+The harness assumes one-answer QA and breaks on ambiguity benchmarks.
 
 ### Mitigation
 
-Keep passage objects, ranking stages, and generation interfaces modular.
+Make answer mode explicit in the schema and parser layer from the start.
 
 ## Risk 4
 
-Evaluation is too benchmark-specific.
+Reduced-context gains are confused with controller gains later.
 
 ### Mitigation
 
-Normalize data inputs and predictions to a common schema.
+Include reduced-context as a first-class baseline now.
 
 ## Risk 5
 
-Framework defaults or version changes silently alter behavior.
+PRD 1 drifts into controller design.
 
 ### Mitigation
 
-Pin FlashRAG version, save full run manifests, and route all outputs through project-owned schemas. ([arXiv][1])
+Do not implement contamination scoring, subset selection, or abstention routing here.
 
 ## Risk 6
 
-Cluster execution introduces path, environment, or sharding bugs that do not appear locally.
+Logging is insufficient for later contamination analysis.
 
 ### Mitigation
 
-Require local smoke tests plus cluster smoke tests and explicit path/config handling.
-
-## Risk 7
-
-The code passes manual inspection but lacks stable behavior under iteration.
-
-### Mitigation
-
-Use TDD, regression tests for every bug, and contract tests for all saved artifacts.
+Over-log by default and save passage identities and ordering.
 
 ---
 
-# 19. Open decisions to settle now
+# 21. Open decisions to settle now
 
-1. Which FlashRAG-supported retriever for v1?
-2. Will hybrid retrieval be default?
-3. Which FlashRAG-supported reranker for v1?
-4. Which generator model for v1?
-5. What top-k and post-rerank k values will be default?
-6. Which initial dataset or benchmark split will be used?
-7. What confidence proxy, if any, should be logged now for future use?
-8. What FlashRAG version or commit will be pinned?
-9. What is the default cluster execution profile?
-10. What local smoke-test fixture dataset will be used?
-11. What minimum test coverage rules will be enforced before cluster runs?
+These should be fixed before implementation starts:
 
----
-
-# 20. Recommended default choices
-
-For a pragmatic v1, I’d lean toward:
-
-* **Framework:** FlashRAG pinned to a fixed commit or release
-* **Execution:** local smoke test first, cluster as default for real runs
-* **Testing:** pytest with unit + contract + integration + regression + cluster smoke layers
-* **Run philosophy:** red → green → refactor for all major modules
-* **Retriever:** hybrid if easy, otherwise strong dense retrieval
-* **Reranker:** yes, one standard reranker
-* **Generator:** one stable high-quality model with temperature 0
-* **Top-k retrieval:** 8 to 10
-* **Top-k after rerank:** 4 to 6
-* **Prompt:** simple grounded QA prompt with instruction to answer from provided evidence only
-
-The point is not squeezing maximum benchmark performance. The point is building a baseline people will respect.
+1. Which generator model is the single fixed model for v1?
+2. Is hybrid retrieval mandatory in phase 1 or phase 2?
+3. Which reranker is the v1 default?
+4. Which Tier 0 benchmark split will be the initial sanity run?
+5. Which AmbigDocs slice will be the first mandatory run?
+6. Whether FaithEval enters phase 1 or phase 2
+7. Whether RAMDocs is in-scope for MVP or MVP-plus
+8. Which confidence proxy, if any, should already be logged for later use
 
 ---
 
-# 21. Deliverables
+# 22. Deliverables
 
 At the end of PRD 1, you should have:
 
-* baseline RAG pipeline code
-* FlashRAG adapter layer
-* run configs for local and cluster execution
+* baseline RAG system code
+* multiple baseline configs
+* benchmark adapters
 * structured outputs
-* run manifests
 * automatic evaluation
-* qualitative error pack
-* test suite covering core contracts and smoke paths
-* short README explaining how to rerun experiments
+* qualitative inspection pack
+* short reproduction README
 
+The point is not just “a RAG pipeline exists.”
 
+The point is:
+
+> the project now has a baseline matrix and benchmark harness solid enough that later controller claims can be judged fairly.
