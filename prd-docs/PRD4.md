@@ -1,4 +1,8 @@
-# PRD 4 — Evaluation, Ablations, and Paper Artifacts
+Absolutely — here is the **revised, fully folded PRD 4** with the **success rubric and submission thresholds integrated into the original document**. It preserves the original structure while adding concrete red / yellow / green criteria for deciding whether the results are strong enough for a serious submission push. 
+
+---
+
+# PRD 4 — Evaluation, Ablations, Paper Artifacts, and Submission Thresholds
 
 ## Project name
 
@@ -15,7 +19,8 @@ This stage is responsible for:
 * ablation design,
 * statistical reporting,
 * case-study generation,
-* and final research artifacts for a paper or public release.
+* final research artifacts for a paper or public release,
+* and explicit decision thresholds for whether the project is strong enough for a serious submission.
 
 ## Why this stage exists
 
@@ -43,7 +48,8 @@ Evaluate whether the contamination-aware controller outperforms strong baseline 
 * measure tradeoffs between safety and utility,
 * test robustness across contamination types,
 * produce clear tables, plots, and case studies for writeup,
-* generate a reproducible evaluation artifact.
+* generate a reproducible evaluation artifact,
+* and determine whether the project is in red, yellow, or green territory for submission quality.
 
 ## Non-goals
 
@@ -95,6 +101,10 @@ Are the effects consistent across:
 * instability,
 * and missing-evidence conditions?
 
+## RQ7
+
+Are the gains strong enough, clean enough, and general enough to justify a serious NeurIPS-style submission push?
+
 ---
 
 # 3. Success criteria
@@ -110,6 +120,15 @@ PRD 4 is complete if all of the following are true:
 
 Preferred:
 7. results are stable across at least two baseline RAG variants or two generator settings.
+
+## Additional success rule
+
+This project should not be judged by average QA gains alone. A strong result must show:
+
+1. meaningful gains on the **target failure mode**,
+2. gains that are **not explained mainly by abstention**,
+3. little or no collapse on **clean retrieval**,
+4. improvement over **strong simple baselines**, not just the weakest baseline.
 
 ---
 
@@ -866,7 +885,192 @@ Do not run every optional ablation before confirming the main result exists.
 
 ---
 
-# 17. Exit criteria
+# 17. Submission-readiness rubric and quantitative thresholds
+
+## Purpose
+
+Define concrete thresholds for judging whether results are:
+
+* too weak for a serious submission push,
+* promising but not yet strong enough,
+* or strong enough to justify full writeup and submission effort.
+
+## 17.1 Core philosophy
+
+A strong result should show:
+
+1. meaningful gains on the **target failure mode**,
+2. gains that are **not explained mainly by abstention**,
+3. little or no collapse on **clean retrieval**,
+4. improvement over **simple baselines**, not just full-context RAG.
+
+## 17.2 Headline target: contaminated retrieval performance
+
+### Metric
+
+Selective accuracy on contaminated retrieval, or equivalent contamination-focused answer-quality metric.
+
+### Red
+
+* less than **3 absolute points** improvement over standard full-context baseline
+* or less than **2 points** over the strongest simple baseline
+
+### Yellow
+
+* **3 to 5 absolute points** improvement over full-context baseline
+* and at least **2 to 3 points** over the strongest simple baseline
+
+### Green
+
+* **5+ absolute points** improvement over full-context baseline
+* and at least **3+ points** over the strongest simple baseline
+
+## 17.3 Confident hallucination reduction
+
+### Metric
+
+Relative reduction in confident hallucination rate on contaminated examples.
+
+### Red
+
+* less than **10% relative reduction**
+
+### Yellow
+
+* about **10–20% relative reduction**
+
+### Green
+
+* **20–30%+ relative reduction**
+
+### Very strong
+
+* **30%+ relative reduction** with modest coverage loss
+
+## 17.4 Clean retrieval preservation
+
+### Metric
+
+Accuracy change on clean retrieval relative to full-context baseline.
+
+### Red
+
+* more than **2 absolute points worse**
+
+### Yellow
+
+* between **1 and 2 points worse**
+
+### Green
+
+* within **1 point** of baseline
+* or better
+
+## 17.5 Coverage / abstention discipline
+
+### Red
+
+* coverage drops sharply, especially without matched-coverage gains
+* or gains disappear when comparing at matched coverage
+
+### Yellow
+
+* moderate coverage drop, but selective accuracy improves clearly
+
+### Green
+
+* small to moderate coverage drop
+* and gains remain clear at matched or near-matched coverage
+
+## 17.6 Beating simple baselines
+
+### Must beat
+
+* standard full-context RAG
+* top-1 or top-2 reduced-context baseline
+* abstention-only controller
+* simple filtering baseline if included
+
+### Red
+
+* controller does not clearly beat top-1/top-2 or abstention-only
+
+### Yellow
+
+* beats most simple baselines, but only narrowly
+
+### Green
+
+* beats all major simple baselines by a visible margin
+* especially on contamination-heavy slices
+
+## 17.7 Natural dataset threshold expectations
+
+### Red
+
+* no visible gain on any natural dataset
+
+### Yellow
+
+* gains on one natural dataset, mixed elsewhere
+
+### Green
+
+* visible gains on at least two of:
+
+  * WikiContradict
+  * FaithEval
+  * AmbigDocs
+  * RAGTruth
+  * RAMDocs
+
+## 17.8 Minimum acceptable for serious paper draft
+
+* at least **3 points absolute** improvement on contaminated-slice selective accuracy
+* at least **10% relative reduction** in confident hallucinations
+* no more than **2 points** clean-slice loss
+* beats full-context baseline and at least one simple baseline
+
+## 17.9 Strong target
+
+* at least **5 points absolute** improvement on contaminated-slice selective accuracy
+* at least **20% relative reduction** in confident hallucinations
+* no more than **1 point** clean-slice loss
+* beats abstention-only and naive top-k baselines
+
+## 17.10 Excellent target
+
+* at least **5–8 points absolute** improvement on contaminated-slice selective accuracy
+* at least **25–30%+ relative reduction** in confident hallucinations
+* negligible clean-slice loss
+* strong natural-dataset gains
+* consistent wins across major contamination subtypes
+
+## 17.11 Project decision rules
+
+### Continue aggressively if:
+
+* contaminated-slice gain is already **5+ points** on dev
+* confident hallucination reduction is **20%+ relative**
+* clean-slice drop is minor
+* simple baselines are clearly beaten
+
+### Continue cautiously if:
+
+* gains are around **3–5 points**
+* some wins are real but the story is not yet clean
+* natural dataset results are mixed
+
+### Reconsider or pivot if:
+
+* gains stay under **3 points**
+* abstention-only is nearly as good
+* top-1/top-2 does as well as the full controller
+* clean-slice utility degrades too much
+
+---
+
+# 18. Exit criteria
 
 PRD 4 is done when:
 
@@ -879,11 +1083,13 @@ PRD 4 is done when:
 7. figures are ready for a draft paper.
 
 Preferred:
-8. the results support a clear story about contamination as a distinct failure mode and subset selection as a useful intervention.
+8. the results support a clear story about contamination as a distinct failure mode and subset selection as a useful intervention,
+9. the results meet at least the **yellow** submission threshold,
+10. the project has a clear judgment on whether it is red, yellow, or green for full submission.
 
 ---
 
-# 18. Risks and mitigations
+# 19. Risks and mitigations
 
 ## Risk 1
 
@@ -932,7 +1138,7 @@ Anchor the paper on:
 
 ---
 
-# 19. Recommended MVP evaluation package
+# 20. Recommended MVP evaluation package
 
 The smallest strong version of PRD 4 is:
 
@@ -943,12 +1149,13 @@ The smallest strong version of PRD 4 is:
 * one natural dataset breakdown
 * 3 to 5 ablations
 * 8 to 10 case studies
+* preliminary red / yellow / green classification
 
 That is enough for a serious artifact.
 
 ---
 
-# 20. Acceptance criteria
+# 21. Acceptance criteria
 
 This PRD has succeeded if you can credibly say:
 
@@ -957,5 +1164,7 @@ This PRD has succeeded if you can credibly say:
 * “The gain is not just because we answer less.”
 * “Subset selection contributes beyond naive context reduction.”
 * “The pattern appears on both controlled and natural contamination data.”
+* “The results clear at least the yellow threshold for submission seriousness.”
 
 That is the paper-level standard.
+
