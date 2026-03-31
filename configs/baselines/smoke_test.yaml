@@ -1,0 +1,16 @@
+# Smoke test — single sparse-retrieval config, 5 examples only
+# Used by slurm/smoke_test.sh to verify the cluster environment end-to-end
+dataset: nq_open
+split: validation
+retriever_type: sparse
+reranker_enabled: false
+generator_model: Qwen/Qwen2.5-32B-Instruct
+prompt_family: single_answer
+top_k_retrieval: 3
+top_k_after_rerank: 3
+context_strategy: full
+answer_mode: single
+output_dir: outputs/smoke_test
+random_seed: 42
+vllm_base_url: http://localhost:8000/v1
+generator_max_tokens: 64
