@@ -4,7 +4,7 @@ dataset: nq_open
 split: validation
 retriever_type: sparse
 reranker_enabled: false
-generator_model: Qwen/Qwen3-32B-Instruct
+generator_model: Qwen/Qwen--Qwen3-32B
 prompt_family: single_answer
 top_k_retrieval: 3
 top_k_after_rerank: 3

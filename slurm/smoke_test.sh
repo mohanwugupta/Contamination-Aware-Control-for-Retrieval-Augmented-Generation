@@ -41,7 +41,7 @@ echo ""
 # 0. Configuration — adjust paths to match your cluster
 # ------------------------------------------------------------------
 PROJECT_DIR=/scratch/gpfs/JORDANAT/mg9965/Contamination-Aware-Control-for-Retrieval-Augmented-Generation
-MODEL_PATH=/scratch/gpfs/JORDANAT/mg9965/models/Qwen--Qwen3-32B-Instruct
+MODEL_PATH=/scratch/gpfs/JORDANAT/mg9965/models/Qwen--Qwen3-32B
 CONDA_ENV=rag_baseline
 VLLM_PORT=8000
 TENSOR_PARALLEL_SIZE=2
