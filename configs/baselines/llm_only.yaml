@@ -1,0 +1,16 @@
+# Baseline 0 — LLM-Only Control (PRD 1 §5)
+# No retrieval, no reranking — pure generator baseline
+# Distinguishes whether retrieval helps or hurts
+dataset: nq_open
+split: validation
+retriever_type: none
+reranker_enabled: false
+generator_model: Qwen/Qwen2.5-32B-Instruct
+prompt_family: single_answer
+top_k_retrieval: 0
+top_k_after_rerank: 0
+context_strategy: none
+answer_mode: single
+output_dir: outputs/llm_only
+random_seed: 42
+vllm_base_url: http://localhost:8000/v1

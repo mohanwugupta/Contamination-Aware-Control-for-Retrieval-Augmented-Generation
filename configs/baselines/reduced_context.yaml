@@ -1,0 +1,18 @@
+# Baseline D — Reduced-Context RAG (PRD 1 §5)
+# Hybrid retrieval + reranking, but only top-2 passages for generation
+# Diagnostic baseline: tests if "just use less context" helps
+dataset: nq_open
+split: validation
+retriever_type: hybrid
+reranker_enabled: true
+generator_model: Qwen/Qwen2.5-32B-Instruct
+prompt_family: single_answer
+top_k_retrieval: 10
+top_k_after_rerank: 2
+context_strategy: reduced
+answer_mode: single
+output_dir: outputs/reduced_context
+random_seed: 42
+dense_model: BAAI/bge-base-en-v1.5
+reranker_model: BAAI/bge-reranker-v2-m3
+vllm_base_url: http://localhost:8000/v1

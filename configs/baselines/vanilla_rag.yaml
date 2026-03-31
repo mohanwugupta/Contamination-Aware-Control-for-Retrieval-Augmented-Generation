@@ -1,0 +1,16 @@
+# Baseline A — Vanilla RAG (PRD 1 §5)
+# Dense-only retrieval, no reranking, full context
+dataset: nq_open
+split: validation
+retriever_type: dense
+reranker_enabled: false
+generator_model: Qwen/Qwen2.5-32B-Instruct
+prompt_family: single_answer
+top_k_retrieval: 10
+top_k_after_rerank: 10
+context_strategy: full
+answer_mode: single
+output_dir: outputs/vanilla_rag
+random_seed: 42
+dense_model: BAAI/bge-base-en-v1.5
+vllm_base_url: http://localhost:8000/v1
