@@ -1,0 +1,22 @@
+# Main dependencies (from pyproject.toml)
+pydantic>=2.0,<3.0
+pyyaml>=6.0
+datasets>=2.14
+torch>=2.0
+transformers>=4.35
+sentence-transformers>=2.2
+faiss-cpu>=1.7
+rank-bm25>=0.2
+vllm>=0.4
+numpy>=1.24
+jsonlines>=4.0
+
+# CLI client for vLLM server
+openai>=1.0
+
+# Development / testing (optional)
+pytest>=7.4
+pytest-cov>=4.1
+pytest-asyncio>=0.21
+ruff>=0.1
+mypy>=1.5
