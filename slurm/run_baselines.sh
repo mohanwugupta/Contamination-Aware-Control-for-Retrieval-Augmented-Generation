@@ -22,7 +22,7 @@
 # Mirrors the proven environment setup from God's Reach project.
 # =============================================================================
 
-set -euo pipefail  # Exit on error, undefined vars, pipe failures
+set -eo pipefail  # Note: no -u — conda shell hook uses unbound internal vars (_CE_M)
 
 echo "=========================================="
 echo "RAG Baseline Pipeline"

@@ -20,7 +20,7 @@
 # Mirrors God's Reach run_batch_qwen72b.sh environment setup.
 # =============================================================================
 
-set -euo pipefail
+set -eo pipefail  # Note: no -u — conda shell hook uses unbound internal vars (_CE_M)
 
 echo "=========================================="
 echo "RAG Baseline Pipeline (Qwen2.5-72B)"

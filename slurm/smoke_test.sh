@@ -26,7 +26,7 @@
 #   5. Validate output files exist
 # =============================================================================
 
-set -euo pipefail
+set -eo pipefail  # Note: no -u — conda shell hook uses unbound internal vars (_CE_M)
 
 echo "=========================================="
 echo "RAG Smoke Test"
