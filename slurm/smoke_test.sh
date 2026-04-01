@@ -67,7 +67,7 @@ fi
 
 # Install the package in editable mode so `python -m rag_baseline.cli` works.
 # This is fast (<5 s) when nothing has changed; idempotent.
-pip install -e . --quiet
+#pip install -e . --quiet
 
 # ------------------------------------------------------------------
 # 2. Cache & offline (identical to run_baselines.sh)
