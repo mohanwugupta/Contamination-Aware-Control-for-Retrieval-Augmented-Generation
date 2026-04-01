@@ -38,7 +38,7 @@ echo "--- AmbigDocs (Tier 1) ---"
 python -c "
 from datasets import load_dataset
 print('Loading AmbigDocs validation split...')
-ds = load_dataset('yoonsanglee/AmbigDocs', split='validation')
+ds = load_dataset('yoonsanglee/AmbigDocs', 'raw', split='validation')
 print(f'  Cached: {len(ds)} examples')
 "
 
