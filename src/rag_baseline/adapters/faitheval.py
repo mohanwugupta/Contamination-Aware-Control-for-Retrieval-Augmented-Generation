@@ -16,7 +16,7 @@ Fields (all subtasks): id, question, answer, answerKey, choices, context
 
 from __future__ import annotations
 
-from rag_baseline.adapters.base import BaseAdapter
+from rag_baseline.adapters.base import BaseAdapter, _load_hf_split
 from rag_baseline.schemas.input import ExampleMetadata, GoldAnswer, InputExample
 
 VALID_SUBTASKS = ("unanswerable", "inconsistent", "counterfactual", "all")
@@ -66,17 +66,27 @@ class FaithEvalAdapter(BaseAdapter):
         Returns:
             List of normalized InputExample instances.
         """
-        from datasets import load_dataset
-
         if self._subtask == "all":
             unanswerable = list(
-                load_dataset(_HF_DATASET_IDS["unanswerable"], split=split)
+                _load_hf_split(
+                    _HF_DATASET_IDS["unanswerable"],
+                    split,
+                    f"faitheval_unanswerable_{split}",
+                )
             )
             inconsistent = list(
-                load_dataset(_HF_DATASET_IDS["inconsistent"], split=split)
+                _load_hf_split(
+                    _HF_DATASET_IDS["inconsistent"],
+                    split,
+                    f"faitheval_inconsistent_{split}",
+                )
             )
             counterfactual = list(
-                load_dataset(_HF_DATASET_IDS["counterfactual"], split=split)
+                _load_hf_split(
+                    _HF_DATASET_IDS["counterfactual"],
+                    split,
+                    f"faitheval_counterfactual_{split}",
+                )
             )
             return self.load_all_from_dicts(
                 unanswerable=unanswerable,
@@ -85,7 +95,11 @@ class FaithEvalAdapter(BaseAdapter):
                 split=split,
             )
         else:
-            ds = load_dataset(_HF_DATASET_IDS[self._subtask], split=split)
+            ds = _load_hf_split(
+                _HF_DATASET_IDS[self._subtask],
+                split,
+                f"faitheval_{self._subtask}_{split}",
+            )
             return self.load_from_dicts(list(ds), split=split)
 
     def load_from_dicts(

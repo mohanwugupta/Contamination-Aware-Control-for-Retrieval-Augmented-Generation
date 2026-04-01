@@ -12,7 +12,7 @@ Splits: train (87,925), validation (3,610)
 
 from __future__ import annotations
 
-from rag_baseline.adapters.base import BaseAdapter
+from rag_baseline.adapters.base import BaseAdapter, _load_hf_split
 from rag_baseline.schemas.input import ExampleMetadata, GoldAnswer, InputExample  # noqa: F401
 
 
@@ -31,9 +31,7 @@ class NQOpenAdapter(BaseAdapter):
         Returns:
             List of normalized InputExample instances.
         """
-        from datasets import load_dataset
-
-        ds = load_dataset(self.HF_DATASET_ID, split=split)
+        ds = _load_hf_split(self.HF_DATASET_ID, split, f"nq_open_{split}")
         return self.load_from_dicts(list(ds), split=split)
 
     def load_from_dicts(

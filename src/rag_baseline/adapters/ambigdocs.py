@@ -20,7 +20,7 @@ Splits: train (25,268), validation (3,610), test (7,220)
 
 from __future__ import annotations
 
-from rag_baseline.adapters.base import BaseAdapter
+from rag_baseline.adapters.base import BaseAdapter, _load_hf_split
 from rag_baseline.schemas.input import ExampleMetadata, GoldAnswer, InputExample
 
 
@@ -43,9 +43,7 @@ class AmbigDocsAdapter(BaseAdapter):
         Returns:
             List of normalized InputExample instances.
         """
-        from datasets import load_dataset
-
-        ds = load_dataset(self.HF_DATASET_ID, split=split)
+        ds = _load_hf_split(self.HF_DATASET_ID, split, f"ambigdocs_{split}")
         return self.load_from_dicts(list(ds), split=split)
 
     def load_from_dicts(
@@ -69,17 +67,37 @@ class AmbigDocsAdapter(BaseAdapter):
             example_id = f"ambig_{qid}"
             docs = row["documents"]
 
+            # Normalise two possible layouts:
+            #   • HF schema (load_dataset):  struct-of-arrays
+            #       docs["title"][i], docs["pid"][i], ...
+            #   • Raw JSON (load_from_disk):  list-of-structs
+            #       docs[i]["title"], docs[i]["pid"], ...
+            if isinstance(docs, dict):
+                n = len(docs["title"])
+                docs_list: list[dict] = [
+                    {
+                        "pid": docs["pid"][i],
+                        "title": docs["title"][i],
+                        "text": docs["text"][i],
+                        "answer": docs["answer"][i],
+                    }
+                    for i in range(n)
+                ]
+            else:
+                # list of dicts — already the right shape
+                docs_list = list(docs)
+
             # Extract answers from all documents
-            multi_answers = list(docs["answer"])
+            multi_answers = [d["answer"] for d in docs_list]
 
             # Build per-example document list and global corpus
             example_doc_list: list[dict] = []
-            for i in range(len(docs["title"])):
-                pid = docs["pid"][i]
+            for doc in docs_list:
+                pid = doc["pid"]
                 doc_entry = {
                     "passage_id": pid,
-                    "text": docs["text"][i],
-                    "source": docs["title"][i],
+                    "text": doc["text"],
+                    "source": doc["title"],
                 }
                 example_doc_list.append(doc_entry)
 
