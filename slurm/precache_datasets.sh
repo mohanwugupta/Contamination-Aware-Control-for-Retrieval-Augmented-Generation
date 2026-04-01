@@ -6,7 +6,7 @@
 # Datasets will be cached so compute nodes can load them in offline mode.
 # =============================================================================
 
-set -euo pipefail
+set -eo pipefail
 
 echo "=========================================="
 echo "Pre-caching HuggingFace datasets"
