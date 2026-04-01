@@ -75,9 +75,9 @@ else
     source activate "$CONDA_ENV"
 fi
 
-# Install the package in editable mode so `python -m rag_baseline.cli` works.
-# Fast (<5 s) when nothing has changed; idempotent.
-pip install -e . --quiet
+# Make the package importable without `pip install -e .`
+# (mirrors what pytest does via pyproject.toml `pythonpath = ["src"]`)
+export PYTHONPATH="$PROJECT_DIR/src${PYTHONPATH:+:$PYTHONPATH}"
 
 # ------------------------------------------------------------------
 # 2. Cache & offline configuration
@@ -88,8 +88,6 @@ pip install -e . --quiet
 export HF_HOME=/scratch/gpfs/JORDANAT/mg9965/hf_cache
 export HF_DATASETS_CACHE=/scratch/gpfs/JORDANAT/mg9965/hf_cache/datasets
 export TRANSFORMERS_CACHE=/scratch/gpfs/JORDANAT/mg9965/hf_cache/transformers
-# Tells adapters where to find the Arrow dirs written by precache_datasets.sh
-export HF_DATASETS_DISK_DIR=$HF_DATASETS_CACHE
 
 # vLLM and compilation caches → scratch (avoid home quota)
 export VLLM_CACHE_DIR=/scratch/gpfs/JORDANAT/mg9965/vLLM-cache

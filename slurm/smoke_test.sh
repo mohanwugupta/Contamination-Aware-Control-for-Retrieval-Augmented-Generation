@@ -65,9 +65,9 @@ else
     source activate "$CONDA_ENV"
 fi
 
-# Install the package in editable mode so `python -m rag_baseline.cli` works.
-# This is fast (<5 s) when nothing has changed; idempotent.
-#pip install -e . --quiet
+# Make the package importable without `pip install -e .`
+# (mirrors what pytest does via pyproject.toml `pythonpath = ["src"]`)
+export PYTHONPATH="$PROJECT_DIR/src${PYTHONPATH:+:$PYTHONPATH}"
 
 # ------------------------------------------------------------------
 # 2. Cache & offline (identical to run_baselines.sh)
