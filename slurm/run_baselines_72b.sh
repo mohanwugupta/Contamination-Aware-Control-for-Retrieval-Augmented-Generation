@@ -36,6 +36,9 @@ echo ""
 # ------------------------------------------------------------------
 PROJECT_DIR=/scratch/gpfs/JORDANAT/mg9965/Contamination-Aware-Control-for-Retrieval-Augmented-Generation
 MODEL_PATH=/scratch/gpfs/JORDANAT/mg9965/models/Qwen--Qwen2.5-72B-Instruct
+# Derive the served model name from the local path — passed to both
+# --served-model-name (vLLM) and --generator-model (CLI) so they always match.
+SERVED_MODEL_NAME=$(basename "$MODEL_PATH")
 CONDA_ENV=rag_baseline
 VLLM_PORT=8000
 TENSOR_PARALLEL_SIZE=4      # 4 GPUs for 72B model
@@ -139,7 +142,7 @@ echo "Starting vLLM server (Qwen2.5-72B, TP=$TENSOR_PARALLEL_SIZE)..."
 
 python -m vllm.entrypoints.openai.api_server \
     --model "$MODEL_PATH" \
-    --served-model-name "Qwen/Qwen2.5-72B-Instruct" \
+    --served-model-name "$SERVED_MODEL_NAME" \
     --port "$VLLM_PORT" \
     --tensor-parallel-size "$TENSOR_PARALLEL_SIZE" \
     --dtype auto \
@@ -213,7 +216,10 @@ for CONFIG in "${BASELINES[@]}"; do
     echo ""
     echo "[$((COMPLETED + FAILED + 1))/$TOTAL] Running: $BASELINE_NAME"
 
-    if python -m rag_baseline.cli --config "$CONFIG" $MAX_EXAMPLES; then
+    if python -m rag_baseline.cli \
+            --config "$CONFIG" \
+            --generator-model "$SERVED_MODEL_NAME" \
+            $MAX_EXAMPLES; then
         echo "✅ $BASELINE_NAME completed"
         COMPLETED=$((COMPLETED + 1))
     else

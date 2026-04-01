@@ -74,6 +74,18 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="Tensor parallel size for in-process mode (default: 2).",
     )
+    parser.add_argument(
+        "--generator-model",
+        type=str,
+        default=None,
+        dest="generator_model",
+        help=(
+            "Override the generator_model field in the config. "
+            "In server mode this must match the --served-model-name passed "
+            "to the vLLM server. Derived from MODEL_PATH by the SLURM scripts "
+            "so configs never need hardcoded model names."
+        ),
+    )
 
     args = parser.parse_args(argv)
 
@@ -92,6 +104,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     if args.dry_run:
+        effective_model = args.generator_model or config.generator_model
         print("=" * 60)
         print("DRY RUN — Config validated successfully")
         print("=" * 60)
@@ -102,7 +115,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  Reranker:         {'enabled' if config.reranker_enabled else 'disabled'}")
         print(f"  Context strategy: {config.context_strategy}")
         print(f"  Answer mode:      {config.answer_mode}")
-        print(f"  Generator:        {config.generator_model}")
+        print(f"  Generator:        {effective_model}")
         print(f"  Generator mode:   {args.generator_mode}")
         if args.generator_mode == "in-process":
             print(f"  Model path:       {args.model_path or '(from config/env)'}")
@@ -121,6 +134,7 @@ def main(argv: list[str] | None = None) -> int:
         generator_mode=args.generator_mode,
         model_path=args.model_path,
         tensor_parallel=args.tp,
+        generator_model_override=args.generator_model,
     )
 
 
@@ -130,6 +144,7 @@ def _execute_run(
     generator_mode: str = "server",
     model_path: str | None = None,
     tensor_parallel: int | None = None,
+    generator_model_override: str | None = None,
 ) -> int:
     """Execute a full pipeline run.
 
@@ -139,6 +154,9 @@ def _execute_run(
         generator_mode: "server" or "in-process".
         model_path: Local model path (in-process mode).
         tensor_parallel: Tensor parallel size (in-process mode).
+        generator_model_override: If set, overrides ``config.generator_model``.
+            The SLURM scripts derive this from ``MODEL_PATH`` so it always
+            matches ``--served-model-name`` and never calls an external API.
 
     Returns:
         Exit code (0 for success, 1 for failure).
@@ -164,10 +182,11 @@ def _execute_run(
     print(f"  Loaded {len(examples)} examples")
 
     # 2. Create generator (server mode or in-process mode)
+    effective_model = generator_model_override or config.generator_model
     if generator_mode == "in-process":
         print(f"  Generator mode: in-process (TP={tensor_parallel or 2})")
         generator = InProcessVLLMGenerator(
-            model_path=model_path or config.generator_model,
+            model_path=model_path or effective_model,
             tensor_parallel_size=tensor_parallel or 2,
             temperature=config.generator_temperature,
             max_tokens=config.generator_max_tokens or 512,
@@ -175,7 +194,7 @@ def _execute_run(
     else:
         print(f"  Generator mode: server ({config.vllm_base_url})")
         generator = VLLMGenerator(
-            model_name=config.generator_model,
+            model_name=effective_model,
             base_url=config.vllm_base_url or "http://localhost:8000/v1",
             temperature=config.generator_temperature,
             max_tokens=config.generator_max_tokens or 512,
