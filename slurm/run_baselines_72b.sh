@@ -69,6 +69,10 @@ else
     source activate "$CONDA_ENV"
 fi
 
+# Install the package in editable mode so `python -m rag_baseline.cli` works.
+# Fast (<5 s) when nothing has changed; idempotent.
+pip install -e . --quiet
+
 # ------------------------------------------------------------------
 # 2. Cache & offline (identical to God's Reach)
 # ------------------------------------------------------------------
