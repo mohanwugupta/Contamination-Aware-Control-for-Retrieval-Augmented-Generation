@@ -6,12 +6,13 @@ FaithEval evaluates contextual faithfulness across three tasks:
     - inconsistent: model should say "conflict"
     - counterfactual: context presents wrong info, model should be faithful to context
 
-Three separate HuggingFace datasets:
+Three separate HuggingFace datasets (schemas differ between subtasks):
     Salesforce/FaithEval-unanswerable-v1.0  (2,492 rows, test only)
+        Fields: qid, question, context, answers (list[str]), subset, justification
     Salesforce/FaithEval-inconsistent-v1.0  (1,500 rows, test only)
+        Fields: qid, question, context, answers (list[str]), subset, justification
     Salesforce/FaithEval-counterfactual-v1.0 (1,000 rows, test only)
-
-Fields (all subtasks): qid, question, context, answers (list[str]), subset, justification
+        Fields: id, question, answer (str), answerKey, choices, context, justification
 """
 
 from __future__ import annotations
@@ -186,7 +187,8 @@ class FaithEvalAdapter(BaseAdapter):
             self._corpus = []
 
         for row in rows:
-            raw_id = row["qid"]
+            # unanswerable/inconsistent use "qid"; counterfactual uses "id"
+            raw_id = row.get("qid") or row["id"]
             example_id = f"faitheval_{abbrev}_{raw_id}"
 
             # Determine gold answer based on subtask
@@ -203,8 +205,13 @@ class FaithEvalAdapter(BaseAdapter):
                     unknown_allowed=True,
                 )
             else:  # counterfactual
+                # counterfactual uses "answer" (str); unanswerable/inconsistent use
+                # "answers" (list) — handle both schemas defensively
+                cf_answers = row.get("answers")
+                cf_single = row.get("answer")
+                gold_answer = (cf_answers[0] if cf_answers else None) or cf_single or ""
                 gold = GoldAnswer(
-                    single_answer=row["answers"][0],
+                    single_answer=gold_answer,
                     multi_answers=None,
                     unknown_allowed=False,
                 )

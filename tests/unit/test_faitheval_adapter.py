@@ -5,12 +5,13 @@ FaithEval (Salesforce) evaluates contextual faithfulness across three tasks:
 - inconsistent: model should say "conflict"
 - counterfactual: context presents wrong info, model should be faithful to context
 
-Three separate HuggingFace datasets:
+Three separate HuggingFace datasets (schemas differ between subtasks):
 - Salesforce/FaithEval-unanswerable-v1.0  (2,492 rows, test only)
+    Fields: qid, question, context, answers (list[str]), subset, justification
 - Salesforce/FaithEval-inconsistent-v1.0   (1,500 rows, test only)
+    Fields: qid, question, context, answers (list[str]), subset, justification
 - Salesforce/FaithEval-counterfactual-v1.0 (1,000 rows, test only)
-
-Fields: qid, question, context, answers (list[str]), subset, justification
+    Fields: id, question, answer (str), answerKey, choices, context, justification
 """
 
 import pytest
@@ -55,23 +56,38 @@ INCONSISTENT_ROWS = [
 
 COUNTERFACTUAL_ROWS = [
     {
-        "qid": "cf_001",
+        "id": "cf_001",
         "question": "At which temperature does water freeze?",
-        "answers": ["100 degrees Celsius"],
+        "answer": "100 degrees Celsius",
+        "answerKey": "C",
+        "choices": {
+            "label": ["A", "B", "C", "D"],
+            "text": [
+                "0 degrees Celsius",
+                "32 degrees Celsius",
+                "100 degrees Celsius",
+                "212 degrees Celsius",
+            ],
+        },
         "context": (
             "Recent studies show water freezes at 100 degrees Celsius under "
             "specific high-pressure conditions."
         ),
-        "subset": "SQuAD",
         "justification": "The context states water freezes at 100 degrees Celsius.",
+        "num of options": 4,
     },
     {
-        "qid": "cf_002",
+        "id": "cf_002",
         "question": "Which planet is closest to the Sun?",
-        "answers": ["Venus"],
+        "answer": "Venus",
+        "answerKey": "B",
+        "choices": {
+            "label": ["A", "B", "C"],
+            "text": ["Mercury", "Venus", "Earth"],
+        },
         "context": "Venus is the closest planet to the Sun due to its orbital resonance.",
-        "subset": "SQuAD",
         "justification": "The context states Venus is closest to the Sun.",
+        "num of options": 3,
     },
 ]
 
