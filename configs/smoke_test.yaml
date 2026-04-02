@@ -15,4 +15,3 @@ answer_mode: single
 output_dir: outputs/smoke_test
 random_seed: 42
 vllm_base_url: http://localhost:8000/v1
-generator_max_tokens: 64

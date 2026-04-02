@@ -152,6 +152,10 @@ class VLLMGenerator(BaseGenerator):
                     max_tokens=self.max_tokens,
                     logprobs=True,
                     top_logprobs=5,
+                    # Disable chain-of-thought thinking for Qwen3 and compatible
+                    # models.  vLLM exposes this via chat_template_kwargs; other
+                    # servers ignore unknown extra_body keys gracefully.
+                    extra_body={"chat_template_kwargs": {"enable_thinking": False}},
                 )
                 choice = response.choices[0]
                 text = choice.message.content or ""

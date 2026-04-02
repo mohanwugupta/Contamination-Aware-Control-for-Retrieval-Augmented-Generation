@@ -27,6 +27,24 @@ UNKNOWN_KEYWORDS = [
 ]
 
 
+# Pattern to strip <think>...</think> blocks (Qwen3 and similar thinking models)
+_THINK_BLOCK_RE = re.compile(r"<think>.*?</think>", re.DOTALL)
+# Also catch unclosed <think> blocks (truncated output) — strip from <think> to end
+_THINK_OPEN_RE = re.compile(r"<think>.*$", re.DOTALL)
+
+
+def _strip_thinking(text: str) -> str:
+    """Remove <think>...</think> reasoning traces from model output.
+
+    Handles:
+    - Closed blocks: <think>...</think>answer
+    - Truncated/unclosed blocks: <think>...  (model ran out of tokens mid-think)
+    """
+    text = _THINK_BLOCK_RE.sub("", text)
+    text = _THINK_OPEN_RE.sub("", text)
+    return text.strip()
+
+
 def _is_unknown(text: str) -> bool:
     """Check if text indicates an unknown / abstain response."""
     text_lower = text.strip().lower()
@@ -84,6 +102,8 @@ def parse_output(raw: str, answer_mode: str) -> ParsedOutput:
         ParsedOutput with appropriate fields populated.
     """
     raw = raw.strip()
+    # Strip <think>...</think> reasoning traces (Qwen3 thinking mode, etc.)
+    raw = _strip_thinking(raw)
 
     if answer_mode == "unknown_or_abstain":
         if _is_unknown(raw):
