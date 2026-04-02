@@ -164,7 +164,7 @@ echo ""
 echo "--- Step 2/4: CLI dry-run ---"
 
 python -m rag_baseline.cli \
-    --config configs/baselines/smoke_test.yaml \
+    --config configs/smoke_test.yaml \
     --dry-run
 
 echo "OK: CLI dry-run passed"
@@ -242,7 +242,7 @@ echo ""
 echo "--- Step 4/4: Pipeline smoke test ($SMOKE_EXAMPLES examples) ---"
 
 python -m rag_baseline.cli \
-    --config configs/baselines/smoke_test.yaml \
+    --config configs/smoke_test.yaml \
     --generator-model "$SERVED_MODEL_NAME" \
     --max-examples "$SMOKE_EXAMPLES"
 
