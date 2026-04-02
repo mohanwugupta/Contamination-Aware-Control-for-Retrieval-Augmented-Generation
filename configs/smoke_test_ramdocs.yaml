@@ -1,0 +1,18 @@
+# Smoke test — RAMDocs, sparse retrieval, 5 examples
+# RAMDocs bundles mixed-type documents per example (correct / misinfo / noise).
+# get_corpus() flattens them for BM25 indexing.  This exercises the full
+# retrieve → assemble → generate → multi-answer evaluate path on conflicting
+# evidence.
+dataset: ramdocs
+split: test
+retriever_type: sparse
+reranker_enabled: false
+generator_model: Qwen/Qwen--Qwen3-32B
+prompt_family: multi_answer
+top_k_retrieval: 3
+top_k_after_rerank: 3
+context_strategy: full
+answer_mode: multi
+output_dir: outputs/smoke_test_ramdocs
+random_seed: 42
+vllm_base_url: http://localhost:8000/v1

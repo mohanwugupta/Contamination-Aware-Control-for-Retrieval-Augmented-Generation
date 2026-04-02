@@ -38,6 +38,13 @@ class ArtifactLogger:
             "evaluations": [],
         }
 
+        # Clear any JSONL files left over from a previous run so we don't
+        # accumulate duplicate entries across re-runs.
+        for key in self._buffers:
+            existing = self.output_dir / f"{key}.jsonl"
+            if existing.exists():
+                existing.unlink()
+
     def _append(self, key: str, record: BaseModel) -> None:
         """Append a record to the buffer."""
         self._buffers[key].append(record.model_dump_json())

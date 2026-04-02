@@ -1,0 +1,17 @@
+# Smoke test — AmbigDocs, sparse retrieval, 5 examples
+# AmbigDocs bundles documents per example; get_corpus() exposes them as a
+# flat BM25 index.  This exercises the full retrieve → assemble → generate
+# → multi-answer evaluate path.
+dataset: ambigdocs
+split: validation
+retriever_type: sparse
+reranker_enabled: false
+generator_model: Qwen/Qwen--Qwen3-32B
+prompt_family: multi_answer
+top_k_retrieval: 3
+top_k_after_rerank: 3
+context_strategy: full
+answer_mode: multi
+output_dir: outputs/smoke_test_ambigdocs
+random_seed: 42
+vllm_base_url: http://localhost:8000/v1

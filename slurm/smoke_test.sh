@@ -158,16 +158,22 @@ fi
 echo "OK: All unit tests passed"
 
 # ------------------------------------------------------------------
-# 6. Step 2/4: CLI dry-run (no GPU)
+# 6. Step 2/4: CLI dry-run (no GPU) — validate all smoke configs
 # ------------------------------------------------------------------
 echo ""
 echo "--- Step 2/4: CLI dry-run ---"
 
-python -m rag_baseline.cli \
-    --config configs/smoke_test.yaml \
-    --dry-run
+for SMOKE_CONFIG in \
+        configs/smoke_test.yaml \
+        configs/smoke_test_ambigdocs.yaml \
+        configs/smoke_test_faitheval.yaml \
+        configs/smoke_test_ramdocs.yaml; do
+    python -m rag_baseline.cli \
+        --config "$SMOKE_CONFIG" \
+        --dry-run
+done
 
-echo "OK: CLI dry-run passed"
+echo "OK: CLI dry-run passed (all configs)"
 
 # ------------------------------------------------------------------
 # 7. Step 3/4: Start vLLM server
@@ -236,45 +242,86 @@ echo "Loaded models:"
 curl -s "http://localhost:${VLLM_PORT}/v1/models" | python -m json.tool 2>/dev/null || true
 
 # ------------------------------------------------------------------
-# 8. Step 4/4: Pipeline smoke test (5 examples)
+# 8. Step 4/4: Pipeline smoke tests (all datasets)
 # ------------------------------------------------------------------
 echo ""
-echo "--- Step 4/4: Pipeline smoke test ($SMOKE_EXAMPLES examples) ---"
+echo "--- Step 4/4: Pipeline smoke tests ($SMOKE_EXAMPLES examples each) ---"
 
-python -m rag_baseline.cli \
-    --config configs/smoke_test.yaml \
-    --generator-model "$SERVED_MODEL_NAME" \
-    --max-examples "$SMOKE_EXAMPLES"
+# NQ-Open: LLM-only (no Wikipedia corpus available for retrieval)
+# AmbigDocs / FaithEval / RAMDocs: sparse retrieval over bundled docs
+SMOKE_CONFIGS=(
+    "configs/smoke_test.yaml"               # NQ-Open   — LLM-only
+    "configs/smoke_test_ambigdocs.yaml"     # AmbigDocs — sparse RAG, multi-answer
+    "configs/smoke_test_faitheval.yaml"     # FaithEval — sparse RAG, unknown-compatible
+    "configs/smoke_test_ramdocs.yaml"       # RAMDocs   — sparse RAG, multi-answer
+)
 
-PIPELINE_EXIT=$?
+SMOKE_FAILED=0
 
-if [ $PIPELINE_EXIT -ne 0 ]; then
-    echo "ERROR: Pipeline smoke test failed"
+for SMOKE_CONFIG in "${SMOKE_CONFIGS[@]}"; do
+    SMOKE_NAME=$(basename "$SMOKE_CONFIG" .yaml)
+    echo ""
+    echo "  Running: $SMOKE_NAME"
+
+    if python -m rag_baseline.cli \
+            --config "$SMOKE_CONFIG" \
+            --generator-model "$SERVED_MODEL_NAME" \
+            --max-examples "$SMOKE_EXAMPLES"; then
+        echo "  OK: $SMOKE_NAME"
+    else
+        echo "  ERROR: $SMOKE_NAME failed (exit $?)"
+        SMOKE_FAILED=$((SMOKE_FAILED + 1))
+    fi
+done
+
+if [ "$SMOKE_FAILED" -ne 0 ]; then
+    echo ""
+    echo "ERROR: $SMOKE_FAILED pipeline smoke test(s) failed"
     exit 1
 fi
-echo "OK: Pipeline completed"
+echo ""
+echo "OK: All pipeline smoke tests passed"
+
+PIPELINE_EXIT=0
 
 # ------------------------------------------------------------------
-# 9. Validate output files were written
+# 9. Validate output files were written for each smoke run
 # ------------------------------------------------------------------
 echo ""
 echo "--- Output validation ---"
 
-OUTPUT_DIR="outputs/smoke_test"
+SMOKE_OUTPUT_DIRS=(
+    "outputs/smoke_test"
+    "outputs/smoke_test_ambigdocs"
+    "outputs/smoke_test_faitheval"
+    "outputs/smoke_test_ramdocs"
+)
+
 ALL_OK=true
 
-for f in summary_metrics.json run_config.yaml; do
-    if [ -f "$OUTPUT_DIR/$f" ]; then
-        echo "OK: $OUTPUT_DIR/$f"
-    else
-        echo "MISSING: $OUTPUT_DIR/$f"
-        ALL_OK=false
-    fi
+for OUTPUT_DIR in "${SMOKE_OUTPUT_DIRS[@]}"; do
+    for f in summary_metrics.json run_config.yaml; do
+        if [ -f "$OUTPUT_DIR/$f" ]; then
+            echo "OK: $OUTPUT_DIR/$f"
+        else
+            echo "MISSING: $OUTPUT_DIR/$f"
+            ALL_OK=false
+        fi
+    done
 done
 
 echo ""
-echo "Metrics summary:"
-cat "$OUTPUT_DIR/summary_metrics.json" 2>/dev/null || echo "(not found)"
+echo "NQ-Open metrics:"
+cat "outputs/smoke_test/summary_metrics.json" 2>/dev/null || echo "(not found)"
+echo ""
+echo "AmbigDocs metrics:"
+cat "outputs/smoke_test_ambigdocs/summary_metrics.json" 2>/dev/null || echo "(not found)"
+echo ""
+echo "FaithEval metrics:"
+cat "outputs/smoke_test_faitheval/summary_metrics.json" 2>/dev/null || echo "(not found)"
+echo ""
+echo "RAMDocs metrics:"
+cat "outputs/smoke_test_ramdocs/summary_metrics.json" 2>/dev/null || echo "(not found)"
 
 # ------------------------------------------------------------------
 # 10. Final result

@@ -1,0 +1,18 @@
+# Smoke test — FaithEval (all subtasks), sparse retrieval, 5 examples
+# FaithEval bundles a context per example (unanswerable / inconsistent /
+# counterfactual).  get_corpus() exposes those contexts for BM25 retrieval.
+# answer_mode: unknown_or_abstain covers the unanswerable and inconsistent
+# subtasks where the expected response is "UNKNOWN" / absence of answer.
+dataset: faitheval
+split: test
+retriever_type: sparse
+reranker_enabled: false
+generator_model: Qwen/Qwen--Qwen3-32B
+prompt_family: unknown_compatible
+top_k_retrieval: 1
+top_k_after_rerank: 1
+context_strategy: full
+answer_mode: unknown_or_abstain
+output_dir: outputs/smoke_test_faitheval
+random_seed: 42
+vllm_base_url: http://localhost:8000/v1

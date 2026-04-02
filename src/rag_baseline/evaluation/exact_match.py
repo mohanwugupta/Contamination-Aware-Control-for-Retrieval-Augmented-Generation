@@ -37,12 +37,21 @@ def compute_exact_match(prediction: str, gold: list[str]) -> Metrics:
 
     Returns:
         Metrics with exact_match and normalized_match fields.
+
+    Notes:
+        - exact_match: literal string equality (after strip).
+        - normalized_match: normalized gold string appears as a substring of
+          the normalized prediction (handles verbose model answers that contain
+          the correct answer embedded in a full sentence).
     """
     prediction = prediction.strip()
+    norm_pred = _normalize_answer(prediction)
+
     exact = any(prediction == g for g in gold)
     normalized = any(
-        _normalize_answer(prediction) == _normalize_answer(g)
+        _normalize_answer(g) in norm_pred
         for g in gold
+        if g  # skip empty gold strings
     )
     return Metrics(
         exact_match=exact,
