@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1             # Single task (not MPI)
 #SBATCH --cpus-per-task=8      # CPUs for tokenization, data loading, retrieval
-#SBATCH --mem=128G             # Memory for Qwen2.5-32B + FAISS indices
+#SBATCH --mem=64G             # Memory for Qwen2.5-32B + FAISS indices
 #SBATCH --gres=gpu:2           # 2 GPUs for 32B model (~65GB VRAM with TP=2)
 #SBATCH --constraint=gpu80
 #SBATCH --mail-type=begin

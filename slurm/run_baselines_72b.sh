@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1             # Single task (not MPI)
 #SBATCH --cpus-per-task=8      # CPUs for tokenization, data loading, retrieval
-#SBATCH --mem=256G             # More memory for 72B model
+#SBATCH --mem=64G           # More memory for 72B model
 #SBATCH --gres=gpu:4           # 4 GPUs for 72B model (~140GB VRAM with TP=4)
 #SBATCH --constraint=gpu80
 #SBATCH --mail-type=begin
