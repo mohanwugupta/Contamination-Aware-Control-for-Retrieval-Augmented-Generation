@@ -263,7 +263,7 @@ echo "--- Output validation ---"
 OUTPUT_DIR="outputs/smoke_test"
 ALL_OK=true
 
-for f in metrics_summary.json run_config.json; do
+for f in summary_metrics.json run_config.yaml; do
     if [ -f "$OUTPUT_DIR/$f" ]; then
         echo "OK: $OUTPUT_DIR/$f"
     else
@@ -274,7 +274,7 @@ done
 
 echo ""
 echo "Metrics summary:"
-cat "$OUTPUT_DIR/metrics_summary.json" 2>/dev/null || echo "(not found)"
+cat "$OUTPUT_DIR/summary_metrics.json" 2>/dev/null || echo "(not found)"
 
 # ------------------------------------------------------------------
 # 10. Final result
