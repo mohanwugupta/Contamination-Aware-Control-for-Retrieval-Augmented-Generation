@@ -36,6 +36,7 @@ class PipelineRunner:
         self.config = config
         self.generator = generator
         self.logger = ArtifactLogger(output_dir=config.output_dir)
+        self._corpus_indexed: bool = False
 
         # Create retriever from config if not provided
         if retriever is not None:
@@ -55,6 +56,7 @@ class PipelineRunner:
         """Index a corpus for retrieval."""
         if self.retriever is not None:
             self.retriever.index(corpus)
+        self._corpus_indexed = True
 
     def run(self, examples: list[InputExample]) -> list[EvaluationOutput]:
         """Run the full pipeline on a list of examples.
@@ -104,6 +106,13 @@ class PipelineRunner:
         # Step 2: Retrieve (if applicable)
         retrieved_passages = []
         if self.retriever is not None:
+            if not self._corpus_indexed:
+                raise RuntimeError(
+                    f"Retriever of type '{self.config.retriever_type}' was created but no corpus "
+                    "has been indexed. Call index_corpus() before run(), or set "
+                    "retriever_type: none in the config for datasets without a bundled corpus "
+                    "(e.g. nq_open)."
+                )
             retrieval_output = self.retriever.retrieve(
                 query=example.question,
                 top_k=self.config.top_k_retrieval,
