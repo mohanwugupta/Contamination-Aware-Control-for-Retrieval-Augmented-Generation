@@ -11,7 +11,7 @@ Three separate HuggingFace datasets:
     Salesforce/FaithEval-inconsistent-v1.0  (1,500 rows, test only)
     Salesforce/FaithEval-counterfactual-v1.0 (1,000 rows, test only)
 
-Fields (all subtasks): id, question, answer, answerKey, choices, context
+Fields (all subtasks): qid, question, context, answers (list[str]), subset, justification
 """
 
 from __future__ import annotations
@@ -186,7 +186,7 @@ class FaithEvalAdapter(BaseAdapter):
             self._corpus = []
 
         for row in rows:
-            raw_id = row["id"]
+            raw_id = row["qid"]
             example_id = f"faitheval_{abbrev}_{raw_id}"
 
             # Determine gold answer based on subtask
@@ -204,7 +204,7 @@ class FaithEvalAdapter(BaseAdapter):
                 )
             else:  # counterfactual
                 gold = GoldAnswer(
-                    single_answer=row["answer"],
+                    single_answer=row["answers"][0],
                     multi_answers=None,
                     unknown_allowed=False,
                 )
@@ -229,8 +229,8 @@ class FaithEvalAdapter(BaseAdapter):
                     split=split,
                     extra={
                         "subtask": subtask,
-                        "answer_key": row.get("answerKey"),
-                        "choices": row.get("choices"),
+                        "subset": row.get("subset"),
+                        "justification": row.get("justification"),
                     },
                 ),
             )

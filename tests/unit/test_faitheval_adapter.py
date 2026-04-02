@@ -10,7 +10,7 @@ Three separate HuggingFace datasets:
 - Salesforce/FaithEval-inconsistent-v1.0   (1,500 rows, test only)
 - Salesforce/FaithEval-counterfactual-v1.0 (1,000 rows, test only)
 
-Fields: id, question, answer, answerKey, choices ({"label": [...], "text": [...]}), context
+Fields: qid, question, context, answers (list[str]), subset, justification
 """
 
 import pytest
@@ -22,70 +22,56 @@ import pytest
 
 UNANSWERABLE_ROWS = [
     {
-        "id": "un_001",
+        "qid": "un_001",
         "question": "What is the capital of Mars?",
-        "answer": "unknown",
-        "answerKey": "A",
-        "choices": {"label": ["A", "B"], "text": ["unknown", "Olympus City"]},
+        "answers": ["unanswerable", "unknown", "no answer"],
         "context": "Mars is the fourth planet from the Sun. No capital city has been established.",
+        "subset": "SQuAD",
+        "justification": "The context does not mention any capital city for Mars.",
     },
     {
-        "id": "un_002",
+        "qid": "un_002",
         "question": "Who wrote the poem about invisible ink?",
-        "answer": "unknown",
-        "answerKey": "B",
-        "choices": {"label": ["A", "B"], "text": ["Shakespeare", "unknown"]},
+        "answers": ["unanswerable", "unknown", "no answer"],
         "context": "Invisible ink has been used throughout history for secret communications.",
+        "subset": "SQuAD",
+        "justification": "No author is mentioned in the modified context.",
     },
 ]
 
 INCONSISTENT_ROWS = [
     {
-        "id": "ic_001",
+        "qid": "ic_001",
         "question": "What year was the Great Library destroyed?",
-        "answer": "conflict",
-        "answerKey": "C",
-        "choices": {
-            "label": ["A", "B", "C"],
-            "text": ["48 BC", "642 AD", "conflict"],
-        },
+        "answers": ["unanswerable", "unknown", "no answer", "conflict"],
         "context": (
             "Source 1: The Great Library was destroyed in 48 BC by Caesar's fire. "
             "Source 2: The Great Library was destroyed in 642 AD during the Muslim conquest."
         ),
+        "subset": "SQuAD",
+        "justification": "Two conflicting dates are presented for the destruction.",
     },
 ]
 
 COUNTERFACTUAL_ROWS = [
     {
-        "id": "cf_001",
+        "qid": "cf_001",
         "question": "At which temperature does water freeze?",
-        "answer": "100 degrees Celsius",
-        "answerKey": "C",
-        "choices": {
-            "label": ["A", "B", "C", "D"],
-            "text": [
-                "0 degrees Celsius",
-                "32 degrees Celsius",
-                "100 degrees Celsius",
-                "212 degrees Celsius",
-            ],
-        },
+        "answers": ["100 degrees Celsius"],
         "context": (
             "Recent studies show water freezes at 100 degrees Celsius under "
             "specific high-pressure conditions."
         ),
+        "subset": "SQuAD",
+        "justification": "The context states water freezes at 100 degrees Celsius.",
     },
     {
-        "id": "cf_002",
+        "qid": "cf_002",
         "question": "Which planet is closest to the Sun?",
-        "answer": "Venus",
-        "answerKey": "B",
-        "choices": {
-            "label": ["A", "B", "C"],
-            "text": ["Mercury", "Venus", "Earth"],
-        },
+        "answers": ["Venus"],
         "context": "Venus is the closest planet to the Sun due to its orbital resonance.",
+        "subset": "SQuAD",
+        "justification": "The context states Venus is closest to the Sun.",
     },
 ]
 
@@ -206,12 +192,12 @@ class TestFaithEvalUnanswerable:
         examples = adapter.load_from_dicts(UNANSWERABLE_ROWS, split="test")
         assert examples[0].metadata.extra["subtask"] == "unanswerable"
 
-    def test_metadata_extra_contains_choices(self):
+    def test_metadata_extra_contains_subset(self):
         from rag_baseline.adapters.faitheval import FaithEvalAdapter
 
         adapter = FaithEvalAdapter(subtask="unanswerable")
         examples = adapter.load_from_dicts(UNANSWERABLE_ROWS, split="test")
-        assert "choices" in examples[0].metadata.extra
+        assert "subset" in examples[0].metadata.extra
 
 
 # ===================================================================
