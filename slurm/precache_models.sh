@@ -21,6 +21,13 @@
 
 set -eo pipefail
 
+# Hide all GPUs: this script only downloads files to disk — it must not try
+# to allocate VRAM.  Login nodes may have a GPU visible, and both AutoModel
+# and SentenceTransformer default to CUDA when available; loading the same
+# ~440 MB model twice (once via transformers, once via sentence-transformers)
+# exhausts GPU memory on shared login-node GPUs.
+export CUDA_VISIBLE_DEVICES=""
+
 echo "=========================================="
 echo "Pre-caching retrieval / reranking models"
 echo "=========================================="
@@ -75,21 +82,24 @@ def precache_via_transformers(model_id: str) -> None:
     print(f"  [transformers] Downloading tokenizer …")
     AutoTokenizer.from_pretrained(model_id, cache_dir=HF_HOME)
     print(f"  [transformers] Downloading model weights …")
-    AutoModel.from_pretrained(model_id, cache_dir=HF_HOME)
+    # device_map="cpu" prevents AutoModel from moving weights to GPU
+    AutoModel.from_pretrained(model_id, cache_dir=HF_HOME, device_map="cpu")
 
 
 def precache_sentence_transformer(model_id: str) -> None:
     """Load via sentence-transformers to write its extra module config."""
     from sentence_transformers import SentenceTransformer
     print(f"  [sentence-transformers] Loading SentenceTransformer …")
-    SentenceTransformer(model_id, cache_folder=HF_HOME)
+    # device="cpu" prevents sentence-transformers from allocating VRAM
+    SentenceTransformer(model_id, cache_folder=HF_HOME, device="cpu")
 
 
 def precache_cross_encoder(model_id: str) -> None:
     """Load via sentence-transformers CrossEncoder to write its config."""
     from sentence_transformers import CrossEncoder
     print(f"  [sentence-transformers] Loading CrossEncoder …")
-    CrossEncoder(model_id, cache_folder=HF_HOME)
+    # device="cpu" prevents the cross-encoder from allocating VRAM
+    CrossEncoder(model_id, cache_folder=HF_HOME, device="cpu")
 
 
 # ------------------------------------------------------------------ models --
