@@ -164,6 +164,17 @@ sbatch slurm/smoke_test.sh
 
 ## Troubleshooting
 
+### `CUDA error: out of memory` during `precache_models.sh`
+
+Login nodes may have a GPU visible to CUDA. `SentenceTransformer` and
+`AutoModel` default to loading onto GPU when CUDA is available. Loading the
+same model twice (once via `transformers`, once via `sentence-transformers`)
+can exhaust VRAM on shared login-node GPUs.
+
+The script already sets `CUDA_VISIBLE_DEVICES=""` and passes `device="cpu"` to
+prevent this. If you see this error it means you are running an old version of
+the script — pull the latest and re-run.
+
 ### `LocalEntryNotFoundError` / `OSError: We couldn't connect to huggingface.co`
 
 The model is not in the HF cache. Fix: re-run `bash slurm/precache_models.sh`
