@@ -1,11 +1,16 @@
-# Smoke test — FaithEval (all subtasks), sparse retrieval, 5 examples
-# FaithEval bundles a context per example (unanswerable / inconsistent /
-# counterfactual).  get_corpus() exposes those contexts for BM25 retrieval.
-# answer_mode: unknown_or_abstain covers the unanswerable and inconsistent
-# subtasks where the expected response is "UNKNOWN" / absence of answer.
+# Smoke test — FaithEval (all subtasks), DENSE retrieval, 5 examples
+#
+# Pipeline components exercised:
+#   ✅ Dense retriever   — SentenceTransformer (BAAI/bge-base-en-v1.5) + FAISS
+#   ❌ Reranker          — off (tested by smoke_test_ramdocs)
+#
+# FaithEval bundles one context per example (unanswerable / inconsistent /
+# counterfactual).  get_corpus() exposes those contexts for dense retrieval.
+# top_k=1 is intentional: there is exactly one relevant passage per example.
+# answer_mode: unknown_or_abstain covers unanswerable and inconsistent subtasks.
 dataset: faitheval
 split: test
-retriever_type: sparse
+retriever_type: dense
 reranker_enabled: false
 generator_model: Qwen/Qwen--Qwen3-32B
 prompt_family: unknown_compatible
@@ -15,4 +20,5 @@ context_strategy: full
 answer_mode: unknown_or_abstain
 output_dir: outputs/smoke_test_faitheval
 random_seed: 42
+dense_model: BAAI/bge-base-en-v1.5
 vllm_base_url: http://localhost:8000/v1

@@ -1,6 +1,11 @@
-# Smoke test — LLM-only config, 5 examples only
-# Uses NQ-Open (no bundled corpus) in LLM-only mode to verify the cluster
-# environment end-to-end without requiring a retrieval index.
+# Smoke test — NQ-Open, LLM-ONLY (no retrieval), 5 examples
+#
+# Pipeline components exercised:
+#   ✅ LLM-only path     — no retriever, no reranker, no corpus indexing
+#   ❌ Retrieval         — off (NQ-Open has no bundled corpus)
+#
+# Uses NQ-Open in LLM-only mode to verify the cluster environment end-to-end
+# without requiring a retrieval index or any cached model weights beyond vLLM.
 # Used by slurm/smoke_test.sh
 dataset: nq_open
 split: validation

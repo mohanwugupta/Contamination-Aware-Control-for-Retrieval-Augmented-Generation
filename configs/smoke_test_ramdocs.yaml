@@ -1,18 +1,24 @@
-# Smoke test — RAMDocs, sparse retrieval, 5 examples
-# RAMDocs bundles mixed-type documents per example (correct / misinfo / noise).
-# get_corpus() flattens them for BM25 indexing.  This exercises the full
-# retrieve → assemble → generate → multi-answer evaluate path on conflicting
-# evidence.
+# Smoke test — RAMDocs, HYBRID retrieval + RERANKER, 5 examples
+#
+# Pipeline components exercised:
+#   ✅ Hybrid retriever  — BM25 (sparse) + FAISS (dense) fusion
+#   ✅ Reranker          — CrossEncoder (BAAI/bge-reranker-v2-m3)
+#
+# RAMDocs bundles mixed-type documents per example (correct / misinfo / noise),
+# giving enough passages per example for both hybrid fusion and reranking to be
+# meaningful.  get_corpus() flattens them into a single BM25+dense index.
 dataset: ramdocs
 split: test
-retriever_type: sparse
-reranker_enabled: false
+retriever_type: hybrid
+reranker_enabled: true
 generator_model: Qwen/Qwen--Qwen3-32B
 prompt_family: multi_answer
-top_k_retrieval: 3
+top_k_retrieval: 5
 top_k_after_rerank: 3
 context_strategy: full
 answer_mode: multi
 output_dir: outputs/smoke_test_ramdocs
 random_seed: 42
+dense_model: BAAI/bge-base-en-v1.5
+reranker_model: BAAI/bge-reranker-v2-m3
 vllm_base_url: http://localhost:8000/v1

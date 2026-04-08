@@ -1,4 +1,9 @@
-# Smoke test — AmbigDocs, sparse retrieval, 5 examples
+# Smoke test — AmbigDocs, SPARSE retrieval, 5 examples
+#
+# Pipeline components exercised:
+#   ✅ Sparse retriever  — BM25 (rank_bm25, no model weights required)
+#   ❌ Reranker          — off (tested by smoke_test_ramdocs)
+#
 # AmbigDocs bundles documents per example; get_corpus() exposes them as a
 # flat BM25 index.  This exercises the full retrieve → assemble → generate
 # → multi-answer evaluate path.

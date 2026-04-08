@@ -15,14 +15,22 @@
 # =============================================================================
 # RAG Smoke Test — quick end-to-end check before a full run
 #
-# Runs 5 examples from NQ-Open through one sparse-retrieval config.
-# Expected runtime: ~5-10 min (mostly model loading).
+# Runs 5 examples through each smoke config, covering all pipeline branches:
+#
+#   smoke_test.yaml          NQ-Open    LLM-only        no retrieval
+#   smoke_test_ambigdocs     AmbigDocs  sparse (BM25)   no reranker
+#   smoke_test_faitheval     FaithEval  dense (FAISS)   no reranker
+#   smoke_test_ramdocs       RAMDocs    hybrid           + reranker
+#
+# Together these exercise every component: BM25, SentenceTransformer/FAISS,
+# dense/sparse fusion, CrossEncoder reranker, and the LLM-only path.
+# Expected runtime: ~10-15 min (mostly model loading).
 #
 # Steps:
 #   1. Unit tests (no GPU)
 #   2. CLI dry-run (no GPU)
 #   3. Start vLLM server
-#   4. Pipeline smoke test (5 examples)
+#   4. Pipeline smoke test (5 examples × 4 configs)
 #   5. Validate output files exist
 # =============================================================================
 
@@ -247,13 +255,16 @@ curl -s "http://localhost:${VLLM_PORT}/v1/models" | python -m json.tool 2>/dev/n
 echo ""
 echo "--- Step 4/4: Pipeline smoke tests ($SMOKE_EXAMPLES examples each) ---"
 
-# NQ-Open: LLM-only (no Wikipedia corpus available for retrieval)
-# AmbigDocs / FaithEval / RAMDocs: sparse retrieval over bundled docs
+# Coverage matrix — every pipeline branch is exercised:
+#   smoke_test          → NQ-Open   / LLM-only             (no retrieval)
+#   smoke_test_ambigdocs → AmbigDocs / sparse (BM25)        (no reranker)
+#   smoke_test_faitheval → FaithEval / dense  (FAISS + bge) (no reranker)
+#   smoke_test_ramdocs   → RAMDocs   / hybrid + reranker    (full pipeline)
 SMOKE_CONFIGS=(
     "configs/smoke_test.yaml"               # NQ-Open   — LLM-only
     "configs/smoke_test_ambigdocs.yaml"     # AmbigDocs — sparse RAG, multi-answer
-    "configs/smoke_test_faitheval.yaml"     # FaithEval — sparse RAG, unknown-compatible
-    "configs/smoke_test_ramdocs.yaml"       # RAMDocs   — sparse RAG, multi-answer
+    "configs/smoke_test_faitheval.yaml"     # FaithEval — dense RAG, unknown-compatible
+    "configs/smoke_test_ramdocs.yaml"       # RAMDocs   — hybrid RAG + reranker, multi-answer
 )
 
 SMOKE_FAILED=0
