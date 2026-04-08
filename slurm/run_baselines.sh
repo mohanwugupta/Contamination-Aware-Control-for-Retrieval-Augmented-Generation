@@ -90,7 +90,7 @@ export PYTHONPATH="$PROJECT_DIR/src${PYTHONPATH:+:$PYTHONPATH}"
 # HuggingFace model + dataset caches → scratch (avoid home quota)
 export HF_HOME=/scratch/gpfs/JORDANAT/mg9965/hf_cache
 export HF_DATASETS_CACHE=/scratch/gpfs/JORDANAT/mg9965/hf_cache/datasets
-export TRANSFORMERS_CACHE=/scratch/gpfs/JORDANAT/mg9965/hf_cache/transformers
+export TRANSFORMERS_CACHE=/scratch/gpfs/JORDANAT/mg9965/hf_cache/hub
 
 # vLLM and compilation caches → scratch (avoid home quota)
 export VLLM_CACHE_DIR=/scratch/gpfs/JORDANAT/mg9965/vLLM-cache

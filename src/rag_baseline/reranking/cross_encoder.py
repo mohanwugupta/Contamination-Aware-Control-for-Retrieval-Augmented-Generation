@@ -24,11 +24,12 @@ class CrossEncoderReranker(BaseReranker):
     @property
     def model(self) -> CrossEncoder:
         if self._model is None:
-            # Pass cache_folder so sentence-transformers looks in HF_HOME
-            # (set by SLURM scripts) rather than its own default
-            # ~/.cache/torch/sentence_transformers/.  Without this, models
-            # downloaded by precache_models.sh are invisible at inference time.
-            cache_folder = os.environ.get("HF_HOME")
+            # HuggingFace stores model files in {HF_HOME}/hub/, not in
+            # HF_HOME itself.  CrossEncoder's cache_folder maps directly to
+            # the cache_dir arg of AutoConfig.from_pretrained, so we must
+            # point at the hub sub-directory.
+            hf_home = os.environ.get("HF_HOME")
+            cache_folder = os.path.join(hf_home, "hub") if hf_home else None
             self._model = CrossEncoder(
                 self.model_name,
                 cache_folder=cache_folder,

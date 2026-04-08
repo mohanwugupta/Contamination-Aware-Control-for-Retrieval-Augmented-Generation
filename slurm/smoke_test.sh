@@ -85,7 +85,7 @@ export PYTHONPATH="$PROJECT_DIR/src${PYTHONPATH:+:$PYTHONPATH}"
 # ------------------------------------------------------------------
 export HF_HOME=/scratch/gpfs/JORDANAT/mg9965/hf_cache
 export HF_DATASETS_CACHE=/scratch/gpfs/JORDANAT/mg9965/hf_cache/datasets
-export TRANSFORMERS_CACHE=/scratch/gpfs/JORDANAT/mg9965/hf_cache/transformers
+export TRANSFORMERS_CACHE=/scratch/gpfs/JORDANAT/mg9965/hf_cache/hub
 # Tells adapters where to find the Arrow dirs written by precache_datasets.sh
 export HF_DATASETS_DISK_DIR=$HF_DATASETS_CACHE
 export VLLM_CACHE_DIR=/scratch/gpfs/JORDANAT/mg9965/vLLM-cache
