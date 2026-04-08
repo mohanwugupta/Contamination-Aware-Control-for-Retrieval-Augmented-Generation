@@ -82,8 +82,9 @@ def precache_via_transformers(model_id: str) -> None:
     print(f"  [transformers] Downloading tokenizer …")
     AutoTokenizer.from_pretrained(model_id, cache_dir=HF_HOME)
     print(f"  [transformers] Downloading model weights …")
-    # device_map="cpu" prevents AutoModel from moving weights to GPU
-    AutoModel.from_pretrained(model_id, cache_dir=HF_HOME, device_map="cpu")
+    # No device_map needed: CUDA_VISIBLE_DEVICES="" (set in the shell) hides
+    # all GPUs so PyTorch defaults to CPU without requiring `accelerate`.
+    AutoModel.from_pretrained(model_id, cache_dir=HF_HOME)
 
 
 def precache_sentence_transformer(model_id: str) -> None:
