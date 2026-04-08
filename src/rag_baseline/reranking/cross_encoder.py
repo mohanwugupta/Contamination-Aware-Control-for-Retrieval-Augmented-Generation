@@ -24,15 +24,13 @@ class CrossEncoderReranker(BaseReranker):
     @property
     def model(self) -> CrossEncoder:
         if self._model is None:
-            # HuggingFace stores model files in {HF_HOME}/hub/, not in
-            # HF_HOME itself.  CrossEncoder's cache_folder maps directly to
-            # the cache_dir arg of AutoConfig.from_pretrained, so we must
-            # point at the hub sub-directory.
+            # precache_models.sh downloads models with cache_dir=HF_HOME
+            # (not HF_HOME/hub), so files land at {HF_HOME}/models--BAAI--...
+            # We must pass the same root here so offline lookup succeeds.
             hf_home = os.environ.get("HF_HOME")
-            cache_folder = os.path.join(hf_home, "hub") if hf_home else None
             self._model = CrossEncoder(
                 self.model_name,
-                cache_folder=cache_folder,
+                cache_folder=hf_home,
             )
         return self._model
 

@@ -36,7 +36,7 @@ echo "=========================================="
 # 0. Cache paths — must match SLURM scripts exactly
 # ---------------------------------------------------------------------------
 export HF_HOME=/scratch/gpfs/JORDANAT/mg9965/hf_cache
-export TRANSFORMERS_CACHE=$HF_HOME/hub
+export TRANSFORMERS_CACHE=$HF_HOME
 export HF_DATASETS_CACHE=$HF_HOME/datasets
 
 mkdir -p "$HF_HOME" "$TRANSFORMERS_CACHE" "$HF_DATASETS_CACHE"
