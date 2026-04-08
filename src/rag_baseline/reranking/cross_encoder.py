@@ -5,6 +5,8 @@ Uses a cross-encoder model to score query-passage pairs.
 
 from __future__ import annotations
 
+import os
+
 from sentence_transformers import CrossEncoder
 
 from rag_baseline.reranking.base import BaseReranker
@@ -22,7 +24,15 @@ class CrossEncoderReranker(BaseReranker):
     @property
     def model(self) -> CrossEncoder:
         if self._model is None:
-            self._model = CrossEncoder(self.model_name)
+            # Pass cache_folder so sentence-transformers looks in HF_HOME
+            # (set by SLURM scripts) rather than its own default
+            # ~/.cache/torch/sentence_transformers/.  Without this, models
+            # downloaded by precache_models.sh are invisible at inference time.
+            cache_folder = os.environ.get("HF_HOME")
+            self._model = CrossEncoder(
+                self.model_name,
+                cache_folder=cache_folder,
+            )
         return self._model
 
     def rerank(

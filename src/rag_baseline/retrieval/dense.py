@@ -6,6 +6,8 @@ then performs approximate nearest-neighbor search via FAISS.
 
 from __future__ import annotations
 
+import os
+
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
@@ -25,7 +27,15 @@ class DenseRetriever(BaseRetriever):
     @property
     def model(self) -> SentenceTransformer:
         if self._model is None:
-            self._model = SentenceTransformer(self.model_name)
+            # Pass cache_folder so sentence-transformers looks in HF_HOME
+            # (set by SLURM scripts) rather than its own default
+            # ~/.cache/torch/sentence_transformers/.  Without this, models
+            # downloaded by precache_models.sh are invisible at inference time.
+            cache_folder = os.environ.get("HF_HOME")
+            self._model = SentenceTransformer(
+                self.model_name,
+                cache_folder=cache_folder,
+            )
         return self._model
 
     def index(self, corpus: list[dict]) -> None:
