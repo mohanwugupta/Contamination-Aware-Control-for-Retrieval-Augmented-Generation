@@ -6,6 +6,27 @@ A reproducible baseline RAG evaluation stack that runs multiple standard baselin
 
 ---
 
+## Cluster Setup (Princeton HPC / SLURM)
+
+Compute nodes have no internet. Before submitting any SLURM job you must
+pre-cache models and datasets on a **login node**:
+
+```bash
+# Step 1 — Download retrieval + reranking models (fixes offline bge error)
+bash slurm/precache_models.sh
+
+# Step 2 — Download benchmark datasets
+bash slurm/precache_datasets.sh
+
+# Step 3 — Submit jobs
+sbatch slurm/run_baselines.sh
+```
+
+📖 Full cluster guide (env setup, Qwen download, smoke-check, troubleshooting):
+[docs/cluster-setup.md](docs/cluster-setup.md)
+
+---
+
 ## Quick Start
 
 ### 1. Environment Setup
