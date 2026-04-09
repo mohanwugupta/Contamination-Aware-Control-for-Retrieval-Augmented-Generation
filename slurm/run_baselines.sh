@@ -9,7 +9,7 @@
 #SBATCH --mail-type=begin
 #SBATCH --mail-type=end
 #SBATCH --mail-user=mg9965@princeton.edu
-#SBATCH --time=4:00:00         # 4 hours for full baseline sweep
+#SBATCH --time=16:00:00        # 16 hours for full baseline sweep
 #SBATCH --output=logs/rag_baselines_%j.out
 #SBATCH --error=logs/rag_baselines_%j.err
 
@@ -192,7 +192,7 @@ python -m vllm.entrypoints.openai.api_server \
     --trust-remote-code \
     --max-model-len "$MAX_MODEL_LEN" \
     --gpu-memory-utilization "$GPU_MEMORY_UTILIZATION" \
-    --enforce-eager \
+    --max-num-seqs 256 \
     --disable-custom-all-reduce \
     &
 
@@ -275,6 +275,7 @@ for CONFIG in "${BASELINES[@]}"; do
     if python -m rag_baseline.cli \
             --config "$CONFIG" \
             --generator-model "$SERVED_MODEL_NAME" \
+            --num-workers 64 \
             $MAX_EXAMPLES; then
         echo "✅ $BASELINE_NAME completed successfully"
         COMPLETED=$((COMPLETED + 1))

@@ -86,6 +86,18 @@ def main(argv: list[str] | None = None) -> int:
             "so configs never need hardcoded model names."
         ),
     )
+    parser.add_argument(
+        "--num-workers",
+        type=int,
+        default=32,
+        dest="num_workers",
+        help=(
+            "Number of concurrent generation requests sent to the vLLM server "
+            "(default: 32). Higher values keep the GPU busier by flooding the "
+            "server's continuous-batching queue. Has no effect in in-process mode "
+            "where generation is already batched internally."
+        ),
+    )
 
     args = parser.parse_args(argv)
 
@@ -122,6 +134,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  Tensor parallel:  {args.tp or 2}")
         else:
             print(f"  vLLM base URL:    {config.vllm_base_url}")
+            print(f"  Num workers:      {args.num_workers}")
         print(f"  Output dir:       {config.output_dir}")
         print(f"  Random seed:      {config.random_seed}")
         print("=" * 60)
@@ -135,6 +148,7 @@ def main(argv: list[str] | None = None) -> int:
         model_path=args.model_path,
         tensor_parallel=args.tp,
         generator_model_override=args.generator_model,
+        num_workers=args.num_workers,
     )
 
 
@@ -145,6 +159,7 @@ def _execute_run(
     model_path: str | None = None,
     tensor_parallel: int | None = None,
     generator_model_override: str | None = None,
+    num_workers: int = 32,
 ) -> int:
     """Execute a full pipeline run.
 
@@ -157,6 +172,10 @@ def _execute_run(
         generator_model_override: If set, overrides ``config.generator_model``.
             The SLURM scripts derive this from ``MODEL_PATH`` so it always
             matches ``--served-model-name`` and never calls an external API.
+        num_workers: Concurrent generation threads for the vLLM server mode.
+            All examples are retrieved first (Pass 1), then all prompts are
+            sent in parallel (Pass 2) so vLLM's continuous-batching scheduler
+            keeps the GPU busy throughout the run.
 
     Returns:
         Exit code (0 for success, 1 for failure).
@@ -216,7 +235,7 @@ def _execute_run(
                 return 1
 
     # 3. Create pipeline
-    runner = PipelineRunner(config=config, generator=generator)
+    runner = PipelineRunner(config=config, generator=generator, num_workers=num_workers)
 
     # 4. Index corpus (if applicable)
     corpus = adapter.get_corpus()

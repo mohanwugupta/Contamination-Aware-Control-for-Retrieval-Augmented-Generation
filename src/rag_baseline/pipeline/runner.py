@@ -5,14 +5,33 @@ load → retrieve → rerank → assemble → prompt → generate → parse → 
 
 All baseline variants differ only in controlled config-driven places:
 retriever type, reranking on/off, number of passages, answer mode.
+
+Throughput design
+-----------------
+The pipeline uses a **three-pass** design to maximise GPU utilisation:
+
+  Pass 1 (CPU)  — retrieve + rerank + assemble + render prompt for every example.
+  Pass 2 (GPU)  — send ALL prompts to vLLM concurrently via a thread pool so the
+                  server's continuous-batching scheduler can keep the GPUs busy
+                  instead of waiting for one sequential request at a time.
+  Pass 3 (CPU)  — parse + evaluate + log every result in original order.
+
+Set ``num_workers`` (default 32) to control how many in-flight HTTP requests are
+sent to the vLLM server simultaneously.  vLLM queues excess requests internally,
+so setting this to the full dataset size is safe and optimal.
 """
 
 from __future__ import annotations
 
+import logging
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
 from rag_baseline.config.schema import RunConfig
 from rag_baseline.context.assembly import assemble_context
 from rag_baseline.evaluation.base import evaluate_example
-from rag_baseline.generation.vllm_generator import BaseGenerator
+from rag_baseline.generation.vllm_generator import BaseGenerator, GenerationResult
 from rag_baseline.logging.artifact_logger import ArtifactLogger
 from rag_baseline.parsing.output_parser import parse_output
 from rag_baseline.prompts.templates import render_prompt
@@ -23,6 +42,19 @@ from rag_baseline.schemas.generation import GenerationOutput
 from rag_baseline.schemas.input import InputExample
 from rag_baseline.schemas.prompt import PromptMetadata, PromptRecord
 
+if TYPE_CHECKING:
+    pass
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class _WorkItem:
+    """Intermediate state produced by Pass 1 and consumed by Pass 3."""
+    example: InputExample
+    prompt_record: PromptRecord
+    prompt_text: str
+
 
 class PipelineRunner:
     """Config-driven pipeline runner for baseline RAG systems."""
@@ -32,9 +64,11 @@ class PipelineRunner:
         config: RunConfig,
         generator: BaseGenerator,
         retriever: BaseRetriever | None = None,
+        num_workers: int = 32,
     ) -> None:
         self.config = config
         self.generator = generator
+        self.num_workers = num_workers
         self.logger = ArtifactLogger(output_dir=config.output_dir)
         self._corpus_indexed: bool = False
 
@@ -61,20 +95,57 @@ class PipelineRunner:
     def run(self, examples: list[InputExample]) -> list[EvaluationOutput]:
         """Run the full pipeline on a list of examples.
 
+        Uses a three-pass approach to keep the GPU busy:
+          1. CPU pass  — retrieve + assemble + prompt for all examples.
+          2. GPU pass  — generate all prompts concurrently (thread pool →
+                         vLLM continuous batching).
+          3. CPU pass  — parse + evaluate + log all results.
+
         Args:
             examples: List of normalized input examples.
 
         Returns:
-            List of evaluation outputs.
+            List of evaluation outputs in the same order as *examples*.
         """
-        results: list[EvaluationOutput] = []
-        eval_counts = {"total": 0, "normalized_match": 0, "exact_match": 0}
+        if not examples:
+            self.logger.flush()
+            self._save_summary({}, 0)
+            return []
 
-        for example in examples:
-            eval_output = self._process_example(example)
+        # ------------------------------------------------------------------
+        # Pass 1 — CPU: retrieve → rerank → assemble → render prompt
+        # ------------------------------------------------------------------
+        logger.info("Pass 1/3 — preparing %d examples (retrieval + prompts)", len(examples))
+        work_items: list[_WorkItem] = [
+            self._prepare_example(example) for example in examples
+        ]
+
+        # ------------------------------------------------------------------
+        # Pass 2 — GPU: generate all prompts concurrently
+        # ------------------------------------------------------------------
+        prompts = [item.prompt_text for item in work_items]
+        effective_workers = min(self.num_workers, len(prompts))
+        logger.info(
+            "Pass 2/3 — generating %d prompts with %d concurrent workers",
+            len(prompts),
+            effective_workers,
+        )
+        with ThreadPoolExecutor(max_workers=effective_workers) as pool:
+            gen_results: list[GenerationResult] = list(
+                pool.map(self.generator.generate, prompts)
+            )
+
+        # ------------------------------------------------------------------
+        # Pass 3 — CPU: parse → evaluate → log (preserves input order)
+        # ------------------------------------------------------------------
+        logger.info("Pass 3/3 — parsing and evaluating %d results", len(gen_results))
+        results: list[EvaluationOutput] = []
+        eval_counts: dict[str, int] = {"total": 0, "normalized_match": 0, "exact_match": 0}
+
+        for item, gen_result in zip(work_items, gen_results):
+            eval_output = self._finalize_example(item, gen_result)
             results.append(eval_output)
 
-            # Track metrics
             eval_counts["total"] += 1
             if eval_output.metrics.normalized_match:
                 eval_counts["normalized_match"] += 1
@@ -85,21 +156,20 @@ class PipelineRunner:
         self.logger.flush()
 
         # Save summary metrics
-        total = eval_counts["total"]
-        summary = {
-            "total_examples": total,
-            "normalized_match_rate": eval_counts["normalized_match"] / total if total > 0 else 0,
-            "exact_match_rate": eval_counts["exact_match"] / total if total > 0 else 0,
-            "baseline_name": self.config.baseline_name,
-            "dataset": self.config.dataset,
-            "split": self.config.split,
-        }
-        self.logger.save_summary_metrics(summary)
+        self._save_summary(eval_counts, eval_counts["total"])
 
         return results
 
-    def _process_example(self, example: InputExample) -> EvaluationOutput:
-        """Process a single example through the full pipeline."""
+    # ------------------------------------------------------------------
+    # Internal helpers
+    # ------------------------------------------------------------------
+
+    def _prepare_example(self, example: InputExample) -> _WorkItem:
+        """Pass 1 worker: retrieve → rerank → assemble → render prompt.
+
+        Performs all CPU-bound work for one example and returns a
+        :class:`_WorkItem` ready to be handed to the generation thread pool.
+        """
         # Step 1: Log input
         self.logger.log_input(example)
 
@@ -117,14 +187,11 @@ class PipelineRunner:
                 query=example.question,
                 top_k=self.config.top_k_retrieval,
             )
-            # Set example_id
             retrieval_output.example_id = example.example_id
             self.logger.log_retrieval(retrieval_output)
             retrieved_passages = retrieval_output.retrieved_passages
 
-        # Step 3: Rerank (if enabled) — skipped for now, hook for later
-        # The reranker would be plugged in here; for baseline testing
-        # we use retrieved passages as-is when reranker is not enabled.
+        # Step 3: Rerank (hook — plug reranker here when implemented)
         context_passages = retrieved_passages
 
         # Step 4: Assemble context
@@ -156,14 +223,25 @@ class PipelineRunner:
         )
         self.logger.log_prompt(prompt_record)
 
-        # Step 6: Generate
-        gen_result = self.generator.generate(prompt_text)
+        return _WorkItem(
+            example=example,
+            prompt_record=prompt_record,
+            prompt_text=prompt_text,
+        )
+
+    def _finalize_example(
+        self,
+        item: _WorkItem,
+        gen_result: GenerationResult,
+    ) -> EvaluationOutput:
+        """Pass 3 worker: parse → evaluate → log one completed generation."""
+        # Step 6: (generation already done in Pass 2)
 
         # Step 7: Parse
         parsed = parse_output(gen_result.text, answer_mode=self.config.answer_mode)
 
         gen_output = GenerationOutput(
-            example_id=example.example_id,
+            example_id=item.example.example_id,
             raw_model_output=gen_result.text,
             parsed_output=parsed,
         )
@@ -173,10 +251,36 @@ class PipelineRunner:
         eval_output = evaluate_example(
             dataset=self.config.dataset,
             parsed_output=parsed,
-            gold=example.gold,
-            example_id=example.example_id,
+            gold=item.example.gold,
+            example_id=item.example.example_id,
             baseline_name=self.config.baseline_name,
         )
         self.logger.log_evaluation(eval_output)
 
         return eval_output
+
+    def _save_summary(self, eval_counts: dict[str, int], total: int) -> None:
+        """Persist summary metrics to disk."""
+        summary = {
+            "total_examples": total,
+            "normalized_match_rate": eval_counts.get("normalized_match", 0) / total if total > 0 else 0,
+            "exact_match_rate": eval_counts.get("exact_match", 0) / total if total > 0 else 0,
+            "baseline_name": self.config.baseline_name,
+            "dataset": self.config.dataset,
+            "split": self.config.split,
+        }
+        self.logger.save_summary_metrics(summary)
+
+    # ------------------------------------------------------------------
+    # Legacy single-example entry point (kept for unit-test compatibility)
+    # ------------------------------------------------------------------
+
+    def _process_example(self, example: InputExample) -> EvaluationOutput:
+        """Process a single example (sequential — used by unit tests only).
+
+        For production throughput use :meth:`run`, which batches all
+        generation calls so vLLM can keep the GPUs saturated.
+        """
+        item = self._prepare_example(example)
+        gen_result = self.generator.generate(item.prompt_text)
+        return self._finalize_example(item, gen_result)

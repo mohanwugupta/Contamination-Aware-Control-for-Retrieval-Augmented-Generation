@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import logging
 import os
+import threading
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -69,7 +70,7 @@ class VLLMGenerator(BaseGenerator):
         api_key: str = "EMPTY",
         max_retries: int = 3,
         retry_delay: float = 2.0,
-        timeout: float = 120.0,
+        timeout: float = 300.0,
     ) -> None:
         self.model_name = model_name
         self.base_url = base_url
@@ -79,7 +80,7 @@ class VLLMGenerator(BaseGenerator):
         self.max_retries = max_retries
         self.retry_delay = retry_delay
         self.timeout = timeout
-        self._client = None
+        self._thread_local = threading.local()  # per-thread OpenAI client
 
     # -- health check -------------------------------------------------------
 
@@ -123,16 +124,19 @@ class VLLMGenerator(BaseGenerator):
 
     @property
     def client(self):
-        if self._client is None:
+        # Each thread gets its own OpenAI client so their httpx connection
+        # pools are independent — this lets all ThreadPoolExecutor workers
+        # issue requests truly in parallel with no pool contention.
+        if not hasattr(self._thread_local, "openai_client"):
             from openai import OpenAI
 
-            self._client = OpenAI(
+            self._thread_local.openai_client = OpenAI(
                 base_url=self.base_url,
                 api_key=self.api_key,
                 timeout=self.timeout,
                 max_retries=self.max_retries,
             )
-        return self._client
+        return self._thread_local.openai_client
 
     # -- generation ---------------------------------------------------------
 
@@ -150,8 +154,6 @@ class VLLMGenerator(BaseGenerator):
                     messages=[{"role": "user", "content": prompt}],
                     temperature=self.temperature,
                     max_tokens=self.max_tokens,
-                    logprobs=True,
-                    top_logprobs=5,
                     # Disable chain-of-thought thinking for Qwen3 and compatible
                     # models.  vLLM exposes this via chat_template_kwargs; other
                     # servers ignore unknown extra_body keys gracefully.
@@ -160,14 +162,9 @@ class VLLMGenerator(BaseGenerator):
                 choice = response.choices[0]
                 text = choice.message.content or ""
 
-                # Extract logprobs if available
-                logprobs = None
-                if choice.logprobs and choice.logprobs.content:
-                    logprobs = [lp.logprob for lp in choice.logprobs.content]
-
                 return GenerationResult(
                     text=text,
-                    logprobs=logprobs,
+                    logprobs=None,
                     finish_reason=choice.finish_reason or "",
                     usage={
                         "prompt_tokens": response.usage.prompt_tokens if response.usage else 0,

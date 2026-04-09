@@ -201,7 +201,7 @@ python -m vllm.entrypoints.openai.api_server \
     --trust-remote-code \
     --max-model-len "$MAX_MODEL_LEN" \
     --gpu-memory-utilization "$GPU_MEMORY_UTILIZATION" \
-    --enforce-eager \
+    --max-num-seqs 256 \
     --disable-custom-all-reduce \
     &
 
