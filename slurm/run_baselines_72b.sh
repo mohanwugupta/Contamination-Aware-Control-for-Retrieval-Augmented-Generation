@@ -151,6 +151,7 @@ python -m vllm.entrypoints.openai.api_server \
     --gpu-memory-utilization "$GPU_MEMORY_UTILIZATION" \
     --max-num-seqs 256 \
     --disable-custom-all-reduce \
+    --enforce-eager \
     &
 
 VLLM_PID=$!
