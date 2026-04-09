@@ -44,3 +44,4 @@ outputs/
 slurm/logs/
 slurm/*.out
 slurm/*.err
+configs/baselines/smoke_test.yaml
