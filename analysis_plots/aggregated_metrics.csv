@@ -1,0 +1,6 @@
+total_examples,normalized_match_rate,exact_match_rate,baseline_name,dataset,split,total_eval_count,multi_answer_score,error_category_complete,error_category_partial,error_category_ambiguous,error_category_merged,error_category_no_answer
+3610,0.0,0.0,hybrid_rerank_reduced,ambigdocs,validation,3610,0.07531548168667278,114.0,355.0,0.0,0.0,3141.0
+3610,0.0,0.0,hybrid_norerank_full,ambigdocs,validation,3610,0.06083827991030209,125.0,207.0,0.0,0.0,3278.0
+3610,0.3734072022160665,0.046814404432132965,llm_only,nq_open,validation,3610,,,,,,
+3610,0.0,0.0,dense_norerank_full,ambigdocs,validation,3610,0.0663718506793299,136.0,224.0,0.0,0.0,3250.0
+3610,0.0,0.0,hybrid_rerank_full,ambigdocs,validation,3610,0.06090753198786441,125.0,208.0,0.0,0.0,3277.0

@@ -140,7 +140,7 @@ class PipelineRunner:
         # ------------------------------------------------------------------
         logger.info("Pass 3/3 — parsing and evaluating %d results", len(gen_results))
         results: list[EvaluationOutput] = []
-        eval_counts: dict[str, int] = {"total": 0, "normalized_match": 0, "exact_match": 0}
+        eval_counts: dict[str, float] = {"total": 0, "normalized_match": 0, "exact_match": 0, "multi_answer_sum": 0, "multi_answer_count": 0}
 
         for item, gen_result in zip(work_items, gen_results):
             eval_output = self._finalize_example(item, gen_result)
@@ -151,6 +151,9 @@ class PipelineRunner:
                 eval_counts["normalized_match"] += 1
             if eval_output.metrics.exact_match:
                 eval_counts["exact_match"] += 1
+            if eval_output.metrics.multi_answer_score is not None:
+                eval_counts["multi_answer_sum"] += eval_output.metrics.multi_answer_score
+                eval_counts["multi_answer_count"] += 1
 
         # Flush all logs
         self.logger.flush()
@@ -259,16 +262,22 @@ class PipelineRunner:
 
         return eval_output
 
-    def _save_summary(self, eval_counts: dict[str, int], total: int) -> None:
+    def _save_summary(self, eval_counts: dict[str, float], total: int) -> None:
         """Persist summary metrics to disk."""
         summary = {
             "total_examples": total,
             "normalized_match_rate": eval_counts.get("normalized_match", 0) / total if total > 0 else 0,
             "exact_match_rate": eval_counts.get("exact_match", 0) / total if total > 0 else 0,
+        }
+        
+        if eval_counts.get("multi_answer_count", 0) > 0:
+            summary["multi_answer_score"] = eval_counts["multi_answer_sum"] / eval_counts["multi_answer_count"]
+            
+        summary.update({
             "baseline_name": self.config.baseline_name,
             "dataset": self.config.dataset,
             "split": self.config.split,
-        }
+        })
         self.logger.save_summary_metrics(summary)
 
     # ------------------------------------------------------------------

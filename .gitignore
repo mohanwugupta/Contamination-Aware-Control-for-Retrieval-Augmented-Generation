@@ -39,9 +39,14 @@ htmlcov/
 
 # Outputs (generated at runtime — do not commit)
 #outputs/
+outputs/smoke_test_*
+outputs/smoke_test
 
 # SLURM logs
 slurm/logs/
 slurm/*.out
 slurm/*.err
 configs/baselines/smoke_test.yaml
+
+# env
+.local_venv

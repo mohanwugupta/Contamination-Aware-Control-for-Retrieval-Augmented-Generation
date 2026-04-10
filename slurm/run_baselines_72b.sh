@@ -51,6 +51,13 @@ BASELINES=(
     "configs/baselines/hybrid_rag.yaml"
     "configs/baselines/hybrid_rerank.yaml"
     "configs/baselines/reduced_context.yaml"
+    "configs/baselines/ramdocs_llm_only.yaml"
+    "configs/baselines/ramdocs_vanilla_rag.yaml"
+    "configs/baselines/ramdocs_hybrid_rag.yaml"
+    "configs/baselines/ramdocs_hybrid_rerank.yaml"
+    "configs/baselines/ramdocs_reduced_context.yaml"
+    "configs/baselines/ambigdocs_llm_only.yaml"
+    "configs/baselines/faitheval_llm_only.yaml"
 )
 
 MAX_EXAMPLES=""

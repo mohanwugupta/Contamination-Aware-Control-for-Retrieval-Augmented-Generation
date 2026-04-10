@@ -41,20 +41,46 @@ def compute_multi_answer_score(
             answer_category="no_answer",
         )
 
-    normalized_preds = {_normalize(p) for p in predictions}
+    normalized_preds = [_normalize(p) for p in predictions]
     normalized_golds = [_normalize(g) for g in gold_answers]
 
     # Recall: how many gold answers are covered
-    covered = sum(1 for g in normalized_golds if g in normalized_preds)
-    recall = covered / len(normalized_golds)
+    # A gold answer is covered if it appears as a substring in ANY of the normalized predictions
+    covered = sum(
+        1 for g in normalized_golds 
+        if g and any(g in p for p in normalized_preds)
+    )
+    
+    # Avoid division by zero if normalized_golds is empty or only contains empty strings
+    valid_golds_count = len([g for g in normalized_golds if g])
+    if valid_golds_count == 0:
+        recall = 0.0
+    else:
+        recall = covered / valid_golds_count
+
+    # Identify if there is a merged answer (one prediction containing multiple golds)
+    # A prediction is "merged" if it covers >1 distinct gold answer
+    def _count_golds_in_pred(pred: str) -> int:
+        return sum(1 for g in normalized_golds if g and g in pred)
+        
+    is_merged = any(_count_golds_in_pred(p) > 1 for p in normalized_preds)
 
     # Determine category
-    if recall == 1.0:
+    if is_merged and valid_golds_count > 1:
+        category = "merged"
+    elif recall == 1.0:
         category = "complete"
     elif recall > 0.0:
         category = "partial"
     else:
         category = "no_answer"
+        
+    # Check for "ambiguous" - model provided fewer answers than required, or didn't disambiguate
+    # If the score is partial or merged, it inherently shows the model was ambiguous or confused.
+    # We can refine this: if it didn't find all but found some, or merged them, we map it to ambiguous/merged.
+    # The AmbigDocs paper uses 'ambiguous' for returning an ambiguous single answer when multiple exist.
+    if category == "partial" and len(predictions) == 1 and valid_golds_count > 1:
+         category = "ambiguous"
 
     return Metrics(
         exact_match=None,

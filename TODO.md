@@ -203,3 +203,28 @@ Preferred:
 9. [x] RAMDocs integrated and run
 10. [x] LLM-only control included in same harness
 11. [x] Short README explains how to reproduce main PRD 1 runs
+
+## PRD 2 — Data Analysis & Automation TODO & Scratchpad
+
+### 2026-04-10 — Session 4
+
+**Goal:**
+- Automate generation of analysis and comparison bar graphs for different RAG baselines.
+- Present standard RAG comparisons (accuracy across pipelines, performance across different subtasks like FaithEval conflict types, etc).
+
+**Plan:**
+1. Parse `summary_metrics.json` across all output directories to aggregate baseline performance into pandas DataFrames.
+2. Generate bar charts for overall exact/normalized match rate, multi-answer recall, F1, etc., comparing pipelines (LLM-only vs Vanilla RAG vs Hybrid Rerank vs etc.) on the same dataset.
+3. Extract generated output metrics (e.g. "unknown" rate for unanswerable questions, conflict rate). 
+4. Plot generation latencies or context sizes if applicable.
+5. Create a standalone analysis script (`src/rag_baseline/analysis/plot_results.py`) to easily output PNG/PDF plots into an `analysis_plots` directory. 
+6. Standard RAG comparisons to implement:
+   - **Downstream Accuracy:** Exact match rate / Normalised match rate per dataset.
+   - **Pipeline Compare:** LLM baseline vs Dense vs Sparse vs Hybrid vs Reranker.
+   - **Faithfulness / Robustness:** How well pipelines detect conflicts (FaithEval/RAMDocs). 
+
+**Current Status:**
+- [x] Initializing analysis plan in TODO.md.
+- [ ] Read across all baseline outputs to structure dataframe.
+- [ ] Build visualization package using `matplotlib`/`seaborn`.
+- [ ] Define standard benchmarks evaluation plots.
