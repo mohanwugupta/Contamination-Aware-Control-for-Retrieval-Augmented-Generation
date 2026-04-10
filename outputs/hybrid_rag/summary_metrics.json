@@ -1,0 +1,8 @@
+{
+  "total_examples": 3610,
+  "normalized_match_rate": 0.0,
+  "exact_match_rate": 0.0,
+  "baseline_name": "hybrid_norerank_full",
+  "dataset": "ambigdocs",
+  "split": "validation"
+}
