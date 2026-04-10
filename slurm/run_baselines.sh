@@ -9,7 +9,7 @@
 #SBATCH --mail-type=begin
 #SBATCH --mail-type=end
 #SBATCH --mail-user=mg9965@princeton.edu
-#SBATCH --time=16:00:00        # 16 hours for full baseline sweep
+#SBATCH --time=4:00:00        # 16 hours for full baseline sweep
 #SBATCH --output=logs/rag_baselines_%j.out
 #SBATCH --error=logs/rag_baselines_%j.err
 

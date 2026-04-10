@@ -38,7 +38,7 @@ htmlcov/
 .DS_Store
 
 # Outputs (generated at runtime — do not commit)
-outputs/
+#outputs/
 
 # SLURM logs
 slurm/logs/

@@ -9,7 +9,7 @@
 #SBATCH --mail-type=begin
 #SBATCH --mail-type=end
 #SBATCH --mail-user=mg9965@princeton.edu
-#SBATCH --time=6:00:00         # Longer time for larger model
+#SBATCH --time=4:00:00         # Longer time for larger model
 #SBATCH --output=logs/rag_baselines_72b_%j.out
 #SBATCH --error=logs/rag_baselines_72b_%j.err
 
