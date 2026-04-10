@@ -1,0 +1,17 @@
+dataset: faitheval
+split: test
+retriever_type: dense
+reranker_enabled: false
+generator_model: Qwen/Qwen--Qwen3-32B
+prompt_family: unknown_compatible
+top_k_retrieval: 1
+top_k_after_rerank: 1
+context_strategy: full
+answer_mode: unknown_or_abstain
+output_dir: outputs/smoke_test_faitheval
+random_seed: 42
+dense_model: BAAI/bge-base-en-v1.5
+reranker_model: BAAI/bge-reranker-v2-m3
+generator_temperature: 0.0
+generator_max_tokens: 512
+vllm_base_url: http://localhost:8000/v1

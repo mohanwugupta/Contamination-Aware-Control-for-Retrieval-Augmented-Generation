@@ -1,0 +1,5 @@
+{"example_id":"ambig_1700","dataset":"ambigdocs","baseline_name":"sparse_norerank_full","metrics":{"exact_match":null,"normalized_match":null,"multi_answer_score":1.0,"answer_category":"complete"}}
+{"example_id":"ambig_14179","dataset":"ambigdocs","baseline_name":"sparse_norerank_full","metrics":{"exact_match":null,"normalized_match":null,"multi_answer_score":0.0,"answer_category":"no_answer"}}
+{"example_id":"ambig_23201","dataset":"ambigdocs","baseline_name":"sparse_norerank_full","metrics":{"exact_match":null,"normalized_match":null,"multi_answer_score":0.0,"answer_category":"no_answer"}}
+{"example_id":"ambig_4547","dataset":"ambigdocs","baseline_name":"sparse_norerank_full","metrics":{"exact_match":null,"normalized_match":null,"multi_answer_score":0.0,"answer_category":"no_answer"}}
+{"example_id":"ambig_46820","dataset":"ambigdocs","baseline_name":"sparse_norerank_full","metrics":{"exact_match":null,"normalized_match":null,"multi_answer_score":0.0,"answer_category":"no_answer"}}

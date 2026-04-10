@@ -1,0 +1,5 @@
+{"example_id":"faitheval_un_00db38fb517e4923b81b5efa298e532e","raw_model_output":"UNKNOWN","parsed_output":{"single_answer":null,"multi_answers":null,"unknown":true}}
+{"example_id":"faitheval_un_55ec33bd05b84c6c82c42743d70e219d","raw_model_output":"UNKNOWN","parsed_output":{"single_answer":null,"multi_answers":null,"unknown":true}}
+{"example_id":"faitheval_un_970806e205c94aaa86d3e5b041406f57","raw_model_output":"Answer: Cyclosporin","parsed_output":{"single_answer":"Answer: Cyclosporin","multi_answers":null,"unknown":false}}
+{"example_id":"faitheval_un_92e469463b6c40c89f8830fcfe243477","raw_model_output":"UNKNOWN","parsed_output":{"single_answer":null,"multi_answers":null,"unknown":true}}
+{"example_id":"faitheval_un_43fb9708fe8242278d97a027a3359275","raw_model_output":"The region that began to grow and assert itself in the 2000s is the Czech Republic.","parsed_output":{"single_answer":"The region that began to grow and assert itself in the 2000s is the Czech Republic.","multi_answers":null,"unknown":false}}

@@ -1,0 +1,5 @@
+{"example_id":"nq_00000","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_00001","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_00002","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_00003","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_00004","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}

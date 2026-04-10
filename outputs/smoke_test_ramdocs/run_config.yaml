@@ -1,0 +1,17 @@
+dataset: ramdocs
+split: test
+retriever_type: hybrid
+reranker_enabled: true
+generator_model: Qwen/Qwen--Qwen3-32B
+prompt_family: multi_answer
+top_k_retrieval: 5
+top_k_after_rerank: 3
+context_strategy: full
+answer_mode: multi
+output_dir: outputs/smoke_test_ramdocs
+random_seed: 42
+dense_model: BAAI/bge-base-en-v1.5
+reranker_model: BAAI/bge-reranker-v2-m3
+generator_temperature: 0.0
+generator_max_tokens: 512
+vllm_base_url: http://localhost:8000/v1

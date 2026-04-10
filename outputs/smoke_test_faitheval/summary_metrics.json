@@ -1,0 +1,8 @@
+{
+  "total_examples": 5,
+  "normalized_match_rate": 0.0,
+  "exact_match_rate": 0.0,
+  "baseline_name": "dense_norerank_full",
+  "dataset": "faitheval",
+  "split": "test"
+}
