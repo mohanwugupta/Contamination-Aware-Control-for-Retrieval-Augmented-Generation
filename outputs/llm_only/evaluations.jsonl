@@ -1,4 +1,4 @@
-{"example_id":"nq_00000","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_00000","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00001","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00002","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00003","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -58,7 +58,7 @@
 {"example_id":"nq_00057","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00058","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00059","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_00060","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_00060","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":true,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00061","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00062","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00063","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
@@ -86,7 +86,7 @@
 {"example_id":"nq_00085","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00086","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00087","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_00088","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_00088","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00089","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00090","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00091","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -440,7 +440,7 @@
 {"example_id":"nq_00439","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00440","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00441","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_00442","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_00442","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00443","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00444","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00445","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -452,7 +452,7 @@
 {"example_id":"nq_00451","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00452","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":true,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00453","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_00454","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_00454","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00455","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00456","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00457","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -558,7 +558,7 @@
 {"example_id":"nq_00557","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00558","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00559","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":true,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_00560","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_00560","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00561","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00562","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00563","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -685,7 +685,7 @@
 {"example_id":"nq_00684","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00685","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00686","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_00687","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_00687","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00688","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00689","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":true,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00690","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
@@ -726,7 +726,7 @@
 {"example_id":"nq_00725","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00726","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00727","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_00728","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_00728","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00729","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00730","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00731","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
@@ -874,7 +874,7 @@
 {"example_id":"nq_00873","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00874","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00875","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_00876","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_00876","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00877","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00878","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00879","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -967,7 +967,7 @@
 {"example_id":"nq_00966","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00967","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":true,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00968","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_00969","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_00969","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00970","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00971","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_00972","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
@@ -1074,7 +1074,7 @@
 {"example_id":"nq_01073","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01074","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01075","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_01076","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_01076","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01077","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01078","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01079","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -1107,7 +1107,7 @@
 {"example_id":"nq_01106","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01107","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01108","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_01109","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_01109","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01110","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01111","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01112","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
@@ -1118,7 +1118,7 @@
 {"example_id":"nq_01117","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01118","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01119","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_01120","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_01120","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":true,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01121","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01122","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01123","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -1297,7 +1297,7 @@
 {"example_id":"nq_01296","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01297","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01298","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_01299","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_01299","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01300","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01301","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01302","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -1481,7 +1481,7 @@
 {"example_id":"nq_01480","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01481","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01482","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_01483","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_01483","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01484","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01485","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01486","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -1556,7 +1556,7 @@
 {"example_id":"nq_01555","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01556","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01557","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_01558","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_01558","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01559","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01560","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01561","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
@@ -1627,7 +1627,7 @@
 {"example_id":"nq_01626","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":true,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01627","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01628","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":true,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_01629","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_01629","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01630","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01631","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01632","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -1831,7 +1831,7 @@
 {"example_id":"nq_01830","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01831","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01832","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_01833","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_01833","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01834","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01835","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01836","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
@@ -1848,7 +1848,7 @@
 {"example_id":"nq_01847","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01848","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01849","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_01850","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_01850","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01851","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01852","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01853","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -1895,7 +1895,7 @@
 {"example_id":"nq_01894","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01895","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01896","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_01897","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":true,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_01897","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01898","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01899","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01900","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
@@ -1938,7 +1938,7 @@
 {"example_id":"nq_01937","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01938","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01939","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_01940","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_01940","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01941","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01942","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":true,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_01943","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -2024,7 +2024,7 @@
 {"example_id":"nq_02023","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02024","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02025","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":true,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_02026","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_02026","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02027","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02028","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02029","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -2059,7 +2059,7 @@
 {"example_id":"nq_02058","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02059","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02060","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_02061","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_02061","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02062","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02063","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02064","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -2082,7 +2082,7 @@
 {"example_id":"nq_02081","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02082","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02083","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_02084","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_02084","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02085","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02086","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02087","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -2189,7 +2189,7 @@
 {"example_id":"nq_02188","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02189","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":true,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02190","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_02191","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_02191","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02192","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02193","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02194","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -2250,7 +2250,7 @@
 {"example_id":"nq_02249","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02250","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02251","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_02252","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_02252","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":true,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02253","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02254","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02255","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -2268,7 +2268,7 @@
 {"example_id":"nq_02267","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02268","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02269","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_02270","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_02270","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02271","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02272","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02273","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -2525,7 +2525,7 @@
 {"example_id":"nq_02524","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02525","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02526","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_02527","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_02527","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02528","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02529","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02530","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -2675,7 +2675,7 @@
 {"example_id":"nq_02674","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02675","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02676","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_02677","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_02677","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02678","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02679","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02680","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -2837,7 +2837,7 @@
 {"example_id":"nq_02836","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":true,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02837","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02838","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_02839","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_02839","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02840","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02841","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":true,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02842","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -2996,7 +2996,7 @@
 {"example_id":"nq_02995","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02996","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02997","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_02998","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_02998","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_02999","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03000","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03001","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -3031,7 +3031,7 @@
 {"example_id":"nq_03030","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03031","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03032","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_03033","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_03033","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03034","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03035","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03036","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -3168,7 +3168,7 @@
 {"example_id":"nq_03167","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03168","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03169","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_03170","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_03170","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03171","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03172","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03173","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -3392,7 +3392,7 @@
 {"example_id":"nq_03391","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03392","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03393","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_03394","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":true,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_03394","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03395","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03396","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03397","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
@@ -3427,8 +3427,8 @@
 {"example_id":"nq_03426","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03427","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03428","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_03429","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_03430","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_03429","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_03430","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03431","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03432","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03433","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
@@ -3456,7 +3456,7 @@
 {"example_id":"nq_03455","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03456","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03457","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_03458","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":true,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_03458","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03459","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03460","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03461","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":true,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
@@ -3590,7 +3590,7 @@
 {"example_id":"nq_03589","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03590","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03591","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
-{"example_id":"nq_03592","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
+{"example_id":"nq_03592","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03593","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":true,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03594","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
 {"example_id":"nq_03595","dataset":"nq_open","baseline_name":"llm_only","metrics":{"exact_match":false,"normalized_match":false,"multi_answer_score":null,"answer_category":null}}
