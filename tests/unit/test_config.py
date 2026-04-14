@@ -188,7 +188,7 @@ random_seed: 42
             output_dir="/tmp/runs/run_001",
             random_seed=42,
         )
-        assert cfg.baseline_name == "hybrid_rerank_full"
+        assert cfg.baseline_name == "nq_open_hybrid_rerank_full"
 
     def test_baseline_name_no_rerank(self):
         from rag_baseline.config.schema import RunConfig
@@ -207,7 +207,7 @@ random_seed: 42
             output_dir="/tmp/runs/run_001",
             random_seed=42,
         )
-        assert cfg.baseline_name == "dense_norerank_full"
+        assert cfg.baseline_name == "nq_open_dense_norerank_full"
 
     def test_baseline_name_reduced_context(self):
         from rag_baseline.config.schema import RunConfig
@@ -226,7 +226,7 @@ random_seed: 42
             output_dir="/tmp/runs/run_001",
             random_seed=42,
         )
-        assert cfg.baseline_name == "hybrid_rerank_reduced"
+        assert cfg.baseline_name == "nq_open_hybrid_rerank_reduced"
 
     def test_llm_only_config(self):
         """Baseline 0 — LLM-only control (no retrieval)."""
@@ -246,4 +246,4 @@ random_seed: 42
             output_dir="/tmp/runs/run_001",
             random_seed=42,
         )
-        assert cfg.baseline_name == "llm_only"
+        assert cfg.baseline_name == "nq_open_llm_only"

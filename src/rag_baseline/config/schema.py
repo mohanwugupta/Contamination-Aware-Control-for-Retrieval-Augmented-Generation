@@ -73,12 +73,20 @@ class RunConfig(BaseModel):
 
     @property
     def baseline_name(self) -> str:
-        """Derive a human-readable baseline name from config fields."""
-        if self.retriever_type == "none":
-            return "llm_only"
+        """Derive a human-readable baseline name from config fields.
 
-        rerank_part = "rerank" if self.reranker_enabled else "norerank"
-        return f"{self.retriever_type}_{rerank_part}_{self.context_strategy}"
+        Always includes the dataset so names are globally unique across the
+        configs/baselines/ directory — even when the same pipeline variant is
+        applied to multiple datasets (e.g. ``ramdocs_hybrid_rerank_full`` vs
+        ``ambigdocs_hybrid_rerank_full``).
+        """
+        if self.retriever_type == "none":
+            pipeline = "llm_only"
+        else:
+            rerank_part = "rerank" if self.reranker_enabled else "norerank"
+            pipeline = f"{self.retriever_type}_{rerank_part}_{self.context_strategy}"
+
+        return f"{self.dataset}_{pipeline}"
 
     # --- I/O ---
 
