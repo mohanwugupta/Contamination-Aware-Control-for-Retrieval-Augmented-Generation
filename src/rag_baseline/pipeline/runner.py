@@ -35,6 +35,8 @@ from rag_baseline.generation.vllm_generator import BaseGenerator, GenerationResu
 from rag_baseline.logging.artifact_logger import ArtifactLogger
 from rag_baseline.parsing.output_parser import parse_output
 from rag_baseline.prompts.templates import render_prompt
+from rag_baseline.reranking import create_reranker
+from rag_baseline.reranking.base import BaseReranker
 from rag_baseline.retrieval import create_retriever
 from rag_baseline.retrieval.base import BaseRetriever
 from rag_baseline.schemas.evaluation import EvaluationOutput
@@ -64,6 +66,7 @@ class PipelineRunner:
         config: RunConfig,
         generator: BaseGenerator,
         retriever: BaseRetriever | None = None,
+        reranker: BaseReranker | None = None,
         num_workers: int = 32,
     ) -> None:
         self.config = config
@@ -82,6 +85,14 @@ class PipelineRunner:
             )
         else:
             self.retriever = None
+
+        # Create reranker from config if not injected
+        if reranker is not None:
+            self.reranker: BaseReranker | None = reranker
+        elif config.reranker_enabled:
+            self.reranker = create_reranker(config.reranker_model)
+        else:
+            self.reranker = None
 
         # Save config
         self.logger.save_run_config(config)
@@ -194,8 +205,18 @@ class PipelineRunner:
             self.logger.log_retrieval(retrieval_output)
             retrieved_passages = retrieval_output.retrieved_passages
 
-        # Step 3: Rerank (hook — plug reranker here when implemented)
-        context_passages = retrieved_passages
+        # Step 3: Rerank — if enabled, rerank and prune to top_k_after_rerank
+        if self.reranker is not None and retrieved_passages:
+            rerank_output = self.reranker.rerank(
+                query=example.question,
+                passages=retrieved_passages,
+                example_id=example.example_id,
+            )
+            rerank_output.example_id = example.example_id
+            self.logger.log_rerank(rerank_output)
+            context_passages = rerank_output.reranked_passages[: self.config.top_k_after_rerank]
+        else:
+            context_passages = retrieved_passages
 
         # Step 4: Assemble context
         assembled = assemble_context(

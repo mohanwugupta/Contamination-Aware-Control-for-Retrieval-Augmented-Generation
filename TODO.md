@@ -250,3 +250,38 @@ Preferred:
     `no_answer` as a category for wrong answers.  Scientifically, "model abstained" and
     "model hallucinated" are different failure modes requiring separate tracking for
     contamination-aware analysis.
+
+- [x] **Fix: Reranker never wired into pipeline runner (two bugs)**
+  - **Bug 1 — Reranker stub:** `PipelineRunner._prepare_example` Step 3 was a dead comment:
+    ```python
+    # Step 3: Rerank (hook — plug reranker here when implemented)
+    context_passages = retrieved_passages
+    ```
+    The `create_reranker()` factory and `CrossEncoderReranker` were fully implemented (PRD 1)
+    but `PipelineRunner.__init__` never instantiated or accepted a reranker.  Every
+    `hybrid_rerank` and `ramdocs_hybrid_rerank` run used raw retrieval order as if no
+    reranker existed.
+  - **Bug 2 — `top_k_after_rerank` ignored for `context_strategy="full"`:**  Step 4 only
+    passed `max_passages` to `assemble_context` when `context_strategy == "reduced"`.
+    `hybrid_rerank.yaml` uses `context_strategy: full` with `top_k_after_rerank: 5`, so all
+    10 retrieved passages reached the generator (2× the intended context window).
+    `reduced_context.yaml` happened to prune correctly by coincidence (its strategy is
+    `"reduced"`), but with the wrong ranking since reranking was never applied.
+  - **Fix (TDD — 4 new tests in `TestPipelineReranker`):**
+    1. `test_reranker_is_invoked_when_enabled` — mock reranker records call count.
+    2. `test_top_k_after_rerank_enforced_with_full_strategy` — ≤5 passages in prompts.
+    3. `test_no_reranker_full_strategy_uses_all_retrieved` — regression: no spurious pruning.
+    4. `test_reranker_artifact_logged` — `reranks.jsonl` written when reranking used.
+  - **Changes to `src/rag_baseline/pipeline/runner.py`:**
+    - Added `reranker: BaseReranker | None = None` parameter to `__init__`.
+    - Auto-instantiates reranker via `create_reranker(config.reranker_model)` when
+      `config.reranker_enabled=True` and no reranker is injected (DI for tests).
+    - Replaced Step 3 stub: calls `self.reranker.rerank(...)`, logs via
+      `self.logger.log_rerank(rerank_output)`, slices to `[:top_k_after_rerank]`.
+    - Step 4 (`assemble_context`) unchanged — pruning now happens before context assembly.
+  - **Impact:** All `hybrid_rerank` and `ramdocs_hybrid_rerank` baseline runs logged in
+    `outputs/` used 10 passages instead of 5 and were not reranked.  These must be re-run
+    with the corrected pipeline before publication.  Similarly, `reduced_context` runs used
+    correct passage count (2) but wrong order (random retrieval order, not reranked).
+  - **Test count:** +4 tests → 205 passed (was 201); 12 pre-existing failures unchanged.
+
