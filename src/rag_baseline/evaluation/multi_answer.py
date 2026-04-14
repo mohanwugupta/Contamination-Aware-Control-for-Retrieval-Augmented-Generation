@@ -73,7 +73,14 @@ def compute_multi_answer_score(
     elif recall > 0.0:
         category = "partial"
     else:
-        category = "no_answer"
+        # recall == 0.0 and predictions is non-empty.
+        # The model DID produce an answer — it was just entirely wrong.
+        # This is distinct from 'no_answer' (abstention/empty output), which is
+        # handled by the early-return guard above.  Conflating the two makes it
+        # impossible to distinguish confident hallucination from abstention in
+        # downstream error analysis, so we label non-empty zero-recall outputs
+        # as 'wrong'.
+        category = "wrong"
         
     # Check for "ambiguous" - model provided fewer answers than required, or didn't disambiguate
     # If the score is partial or merged, it inherently shows the model was ambiguous or confused.

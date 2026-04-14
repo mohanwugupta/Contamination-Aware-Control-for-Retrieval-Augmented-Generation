@@ -68,6 +68,29 @@ class TestMultiAnswerScorer:
         assert result.answer_category == "complete"
 
     def test_partial_match(self):
+        """Model gave >1 predictions, covers some but not all golds → 'partial'.
+
+        'partial' requires multiple predictions (model tried to enumerate answers
+        but missed some). A single prediction covering one of several golds is
+        'ambiguous' (model did not recognise the question was ambiguous).
+        """
+        from rag_baseline.evaluation.multi_answer import compute_multi_answer_score
+
+        # Two predictions: one correct, one wrong → recall 0.5, category partial
+        result = compute_multi_answer_score(
+            predictions=["1963", "wrong_answer"],
+            gold_answers=["1963", "1956"],
+        )
+        assert 0.0 < result.multi_answer_score < 1.0
+        assert result.answer_category == "partial"
+
+    def test_ambiguous_match(self):
+        """Single prediction that covers exactly one of multiple golds → 'ambiguous'.
+
+        The model correctly answered ONE interpretation but did not enumerate all
+        valid answers, indicating it treated an ambiguous question as unambiguous.
+        This matches the AmbigDocs/AmbigQA notion of 'ambiguous' output.
+        """
         from rag_baseline.evaluation.multi_answer import compute_multi_answer_score
 
         result = compute_multi_answer_score(
@@ -75,9 +98,15 @@ class TestMultiAnswerScorer:
             gold_answers=["1963", "1956"],
         )
         assert 0.0 < result.multi_answer_score < 1.0
-        assert result.answer_category == "partial"
+        assert result.answer_category == "ambiguous"
 
-    def test_no_match(self):
+    def test_no_match_is_wrong_not_no_answer(self):
+        """Model answered but covered no gold → 'wrong', not 'no_answer'.
+
+        'no_answer' is reserved for abstention (empty prediction list).
+        A confidently wrong answer is a different failure mode that must be
+        distinguishable for contamination-aware error analysis.
+        """
         from rag_baseline.evaluation.multi_answer import compute_multi_answer_score
 
         result = compute_multi_answer_score(
@@ -85,9 +114,24 @@ class TestMultiAnswerScorer:
             gold_answers=["1963", "1956"],
         )
         assert result.multi_answer_score == 0.0
-        assert result.answer_category == "no_answer"
+        assert result.answer_category == "wrong", (
+            "A non-empty prediction that covers no gold answer should be 'wrong', "
+            "not 'no_answer'. The model did answer — it just answered incorrectly."
+        )
+
+    def test_multiple_wrong_predictions_is_wrong(self):
+        """Multiple predictions, none covering any gold → still 'wrong'."""
+        from rag_baseline.evaluation.multi_answer import compute_multi_answer_score
+
+        result = compute_multi_answer_score(
+            predictions=["foo", "bar", "baz"],
+            gold_answers=["1963", "1956"],
+        )
+        assert result.multi_answer_score == 0.0
+        assert result.answer_category == "wrong"
 
     def test_empty_prediction(self):
+        """Empty prediction list → model abstained → 'no_answer'."""
         from rag_baseline.evaluation.multi_answer import compute_multi_answer_score
 
         result = compute_multi_answer_score(
@@ -96,6 +140,17 @@ class TestMultiAnswerScorer:
         )
         assert result.multi_answer_score == 0.0
         assert result.answer_category == "no_answer"
+
+    def test_wrong_and_no_answer_are_distinct(self):
+        """Sanity check: 'wrong' ≠ 'no_answer' — these are different categories."""
+        from rag_baseline.evaluation.multi_answer import compute_multi_answer_score
+
+        wrong = compute_multi_answer_score(predictions=["bad answer"], gold_answers=["correct"])
+        abstain = compute_multi_answer_score(predictions=[], gold_answers=["correct"])
+
+        assert wrong.answer_category == "wrong"
+        assert abstain.answer_category == "no_answer"
+        assert wrong.answer_category != abstain.answer_category
 
     def test_over_prediction_not_penalized_for_recall(self):
         """Extra predictions beyond gold don't reduce recall score."""

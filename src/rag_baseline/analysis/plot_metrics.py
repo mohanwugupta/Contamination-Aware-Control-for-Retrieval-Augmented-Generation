@@ -90,7 +90,11 @@ def _augment_with_dataset_specific_metrics(evals_file: Path, metrics: dict):
         
     # Categorize AmbigDocs and RAMDocs Errors
     if metrics.get('dataset') in ['ambigdocs', 'ramdocs']:
-        categories = ['complete', 'partial', 'ambiguous', 'merged', 'no_answer']
+        # 'wrong'   — model answered but covered zero gold answers (confident hallucination)
+        # 'no_answer' — model abstained (empty / unknown output)
+        # These two are intentionally kept separate: conflating them hides whether
+        # the model is hallucinating vs. appropriately abstaining.
+        categories = ['complete', 'partial', 'ambiguous', 'merged', 'wrong', 'no_answer']
         for cat in categories:
             metrics[f'error_category_{cat}'] = sum(1 for p in predictions if p.get('metrics', {}).get('answer_category') == cat)
     
@@ -216,7 +220,15 @@ def generate_error_category_plots(df: pd.DataFrame, plots_dir: Path):
         # Rename columns for the legend (remove 'error_category_' and '_pct')
         plot_df.columns = [col.replace('error_category_', '').replace('_pct', '').title() for col in plot_df.columns]
         
-        ax = plot_df.plot(kind='bar', stacked=True, colormap='tab20', figsize=(12, 7))
+        ax = plot_df.plot(kind='bar', stacked=True, figsize=(12, 7),
+                         color={
+                             'Complete':  '#2ca02c',   # green  — fully correct
+                             'Partial':   '#98df8a',   # light green — partially correct
+                             'Ambiguous': '#ff7f0e',   # orange — single answer, missed ambiguity
+                             'Merged':    '#c5b0d5',   # lavender — merged multiple golds
+                             'Wrong':     '#d62728',   # red    — answered, zero recall (hallucination)
+                             'No_Answer': '#aec7e8',   # light blue — abstained / empty output
+                         })
         
         plt.title(f'Answer Categories & Confident Hallucinations ({dataset.upper()})', fontsize=14, pad=15)
         plt.xlabel('Pipeline', fontsize=12)

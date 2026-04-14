@@ -225,6 +225,28 @@ Preferred:
 
 **Current Status:**
 - [x] Initializing analysis plan in TODO.md.
-- [ ] Read across all baseline outputs to structure dataframe.
-- [ ] Build visualization package using `matplotlib`/`seaborn`.
-- [ ] Define standard benchmarks evaluation plots.
+- [x] Read across all baseline outputs to structure dataframe.
+- [x] Build visualization package using `matplotlib`/`seaborn`.
+- [x] Define standard benchmarks evaluation plots.
+- [x] **Fix: `wrong` vs `no_answer` category distinction in multi-answer scorer**
+  - **Root cause:** `compute_multi_answer_score` assigned `answer_category = "no_answer"` for
+    two distinct cases: (a) empty/abstained predictions, and (b) non-empty predictions with
+    zero recall (model answered but completely wrong).  Conflating them made it impossible to
+    distinguish confident hallucination from abstention.
+  - **Fix (TDD):**
+    - Added failing tests: `test_no_match_is_wrong_not_no_answer`,
+      `test_multiple_wrong_predictions_is_wrong`, `test_wrong_and_no_answer_are_distinct`.
+    - Fixed pre-existing test `test_partial_match` (single prediction covering partial gold is
+      `"ambiguous"`, not `"partial"`; added explicit `test_ambiguous_match`).
+    - Changed scorer: recall=0.0 with non-empty predictions → `"wrong"`.
+    - `"no_answer"` now reserved strictly for empty/abstained prediction lists.
+    - Backfilled 9,332 mislabelled records in existing `evaluations.jsonl` files via
+      `src/rag_baseline/analysis/backfill_answer_categories.py`
+      (backs up originals as `.jsonl.bak`).
+    - Updated `plot_metrics.py`: added `"wrong"` to category list; semantic color map
+      (green=complete, light-green=partial, orange=ambiguous, lavender=merged,
+       red=wrong, light-blue=no_answer).
+  - **Defensibility:** The AmbigQA reference evaluator (Min et al. 2020) does not define
+    `no_answer` as a category for wrong answers.  Scientifically, "model abstained" and
+    "model hallucinated" are different failure modes requiring separate tracking for
+    contamination-aware analysis.
