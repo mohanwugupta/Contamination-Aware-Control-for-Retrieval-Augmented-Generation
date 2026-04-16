@@ -255,6 +255,48 @@ A future contamination-aware controller can be inserted between **Reranking** an
 
 ---
 
+## AmbigDocs Error Analysis
+
+### Baseline Results: Answer Category Breakdown
+
+![AmbigDocs Error Categories](analysis_plots/ambigdocs_error_categories.png)
+
+The chart above breaks down answer outcomes across all five baseline pipelines. Key findings:
+
+**LLM-only is nearly always wrong for multi-answer questions.**
+Without retrieval, the model produces roughly 92% "Wrong" answers on AmbigDocs — it either returns a single answer for a multi-sense question or returns a confidently wrong referent. Only ~4% of responses are even partially correct.
+
+**RAG dramatically reduces outright wrong answers — but partial recall dominates.**
+All four RAG variants drop the "Wrong" fraction from ~92% to ~33–36%. The dominant outcome shifts to "Partial" (~37–40%), meaning the model finds and returns *some* correct answers but consistently misses others. This is the core failure mode this project targets.
+
+**Complete recall plateaus at ~15% regardless of retrieval strategy.**
+Hybrid + reranking (`hybrid_rerank_full`) achieves the highest complete recall at ~16%, and dense + hybrid variants cluster tightly at 14–15%. Additional retrieval sophistication (reranking, reduced context) yields marginal gains. This ceiling suggests that incomplete retrieval coverage — not reranking quality — is the binding constraint.
+
+**"Ambiguous" and "Merged" categories are small but meaningful.**
+Cross-entity blending and single-answer collapse together account for ~10–13% of RAG outputs and likely reflect cases where retrieved passages for multiple referents are present but the model conflates them rather than separating them.
+
+### What We Are Doing Next
+
+The plateau at ~15% complete recall under all current baselines exposes two distinct failure modes that require separate fixes:
+
+1. **Retrieval-limited failures (~29.5% of errors):** The retrieved set simply does not cover all valid referents. The model cannot recover even in principle. Fix: contamination-aware re-ranking or query expansion that explicitly targets entity disambiguation.
+
+2. **Post-retrieval failures (~70.5% of errors):** Evidence is present but not fully used — either through single-answer collapse, omission of supported answers, or entity blending. Fix: a contamination-aware context controller that restructures or gates the context before it enters the prompt, combined with a multi-answer extraction constraint.
+
+**Next step** is a human error review pass using `human_checks/index.html` to validate the heuristic-based categorization above, identify the precise split between retrieval-limited and post-retrieval cases, and collect labelled examples for few-shot prompt design for PRD 3 (the contamination-aware controller).
+
+To start the review dashboard:
+```bash
+# Serve locally (required for auto-load of bundled JSONL)
+cd human_checks
+python -m http.server 8080
+# Open http://localhost:8080
+```
+
+Then optionally drop `outputs/hybrid_rerank/retrievals.jsonl` onto the dashboard to load full passage text for retrieval support verification.
+
+---
+
 ## License
 
 Research use only. See individual dataset licenses for benchmark data.

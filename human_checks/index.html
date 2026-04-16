@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AmbigDocs Error Review Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' };</script>
+  <style>
+    mark.gold-mark  { background:#fef08a; border-radius:2px; }
+    mark.pred-mark  { background:#bfdbfe; border-radius:2px; }
+    .dark mark.gold-mark { background:#713f12; color:#fef9c3; }
+    .dark mark.pred-mark { background:#1e3a5f; color:#bfdbfe; }
+    .passage-body   { white-space:pre-wrap; word-break:break-word; }
+    ::-webkit-scrollbar       { width:5px; height:5px; }
+    ::-webkit-scrollbar-thumb { background:#d1d5db; border-radius:3px; }
+    .dark ::-webkit-scrollbar-thumb { background:#4b5563; }
+    .badge { display:inline-flex; align-items:center; padding:1px 8px;
+             border-radius:9999px; font-size:.7rem; font-weight:500;
+             line-height:1.5; white-space:nowrap; }
+    .kbd   { display:inline-flex; align-items:center; justify-content:center;
+             min-width:1.1rem; height:1.1rem; padding:0 3px;
+             background:#f3f4f6; border:1px solid #d1d5db; border-radius:3px;
+             font-size:.65rem; font-family:monospace; vertical-align:middle; }
+    .dark .kbd { background:#374151; border-color:#4b5563; color:#d1d5db; }
+    [hidden]{ display:none !important; }
+    .collh:hover { background:rgba(0,0,0,.04); }
+    .dark .collh:hover { background:rgba(255,255,255,.05); }
+    .chip-gold { background:#dcfce7; color:#166534; border-radius:6px;
+                 padding:2px 8px; font-size:.7rem; display:inline-block; }
+    .chip-wrong { background:#fee2e2; color:#991b1b; border-radius:6px;
+                  padding:2px 8px; font-size:.7rem; display:inline-block; }
+    .chip-pred  { background:#dbeafe; color:#1e40af; border-radius:6px;
+                  padding:2px 8px; font-size:.7rem; display:inline-block; }
+    .dark .chip-gold  { background:#14532d; color:#bbf7d0; }
+    .dark .chip-wrong { background:#7f1d1d; color:#fecaca; }
+    .dark .chip-pred  { background:#1e3a5f; color:#bfdbfe; }
+    .radio-label { display:flex; align-items:flex-start; gap:6px; cursor:pointer;
+                   padding:3px 6px; border-radius:6px; }
+    .radio-label:hover { background:rgba(0,0,0,.04); }
+    .dark .radio-label:hover { background:rgba(255,255,255,.06); }
+    .cb-label { display:flex; align-items:flex-start; gap:6px; cursor:pointer;
+                padding:2px 6px; border-radius:6px; }
+    .cb-label:hover { background:rgba(0,0,0,.04); }
+    .dark .cb-label:hover { background:rgba(255,255,255,.06); }
+    .passage-card + .passage-card { border-top:1px solid #e5e7eb; }
+    .dark .passage-card + .passage-card { border-top-color:#374151; }
+  </style>
+</head>
+<body class="h-screen bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 flex flex-col overflow-hidden text-sm">
+
+<!-- ═══════ HEADER ═══════════════════════════════════════════════════════ -->
+<header class="flex-none flex items-center justify-between px-4 py-2 bg-white dark:bg-gray-800 border-b dark:border-gray-700 shadow-sm z-10">
+  <div class="flex items-center gap-3">
+    <h1 class="font-bold text-base tracking-tight">AmbigDocs Error Review</h1>
+    <span id="load-status" class="text-xs text-gray-400 italic">No data — drop files to begin</span>
+  </div>
+  <div class="flex items-center gap-1.5">
+    <button id="btn-taxonomy" class="text-xs px-2.5 py-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded transition-colors">Taxonomy</button>
+    <button id="btn-summary"  class="text-xs px-2.5 py-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded transition-colors">Summary</button>
+    <button id="btn-dark-mode" class="text-xs px-2.5 py-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded transition-colors" title="Dark mode">☽</button>
+    <button id="btn-shortcuts" class="text-xs px-2.5 py-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded font-mono transition-colors" title="Shortcuts (?)">?</button>
+  </div>
+</header>
+
+<!-- ═══════ MAIN ══════════════════════════════════════════════════════════ -->
+<div class="flex flex-1 overflow-hidden">
+
+<!-- ─── LEFT SIDEBAR ────────────────────────────────────────────────── -->
+<aside class="w-56 flex-none flex flex-col border-r dark:border-gray-700 bg-white dark:bg-gray-800 overflow-y-auto">
+
+  <!-- File drop zone -->
+  <div class="p-3 border-b dark:border-gray-700">
+    <div id="drop-zone"
+         class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-3 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-gray-750 transition-colors">
+      <div class="text-xs text-gray-400">
+        <div class="font-medium text-gray-500 dark:text-gray-300 mb-0.5">Drop files here</div>
+        <div>or <button id="btn-pick-files" class="text-blue-500 hover:underline">browse</button></div>
+        <div class="text-gray-300 dark:text-gray-600 mt-0.5">JSONL · CSV · JSON</div>
+      </div>
+    </div>
+    <input id="file-input" type="file" multiple accept=".jsonl,.csv,.json,.md" class="hidden">
+    <div id="companion-banner" hidden class="mt-2 text-xs bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded p-2 text-yellow-700 dark:text-yellow-200"></div>
+  </div>
+
+  <!-- Progress -->
+  <div class="px-3 py-2.5 border-b dark:border-gray-700">
+    <div class="flex justify-between text-xs text-gray-500 mb-1">
+      <span id="progress-text">0 reviewed</span>
+      <span id="progress-pct">—</span>
+    </div>
+    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+      <div id="progress-bar" class="bg-green-500 h-1.5 rounded-full transition-all duration-300" style="width:0%"></div>
+    </div>
+    <div class="flex justify-between text-xs text-gray-400 mt-1">
+      <span id="total-count">0 total</span>
+      <span id="filtered-count" class="text-blue-500"></span>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <div class="px-3 py-2.5 border-b dark:border-gray-700 space-y-1.5">
+    <div class="flex items-center gap-1">
+      <button id="btn-prev" disabled class="flex-none px-2 py-0.5 text-xs bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded disabled:opacity-40 disabled:cursor-not-allowed transition-colors">← Prev</button>
+      <span id="nav-counter" class="flex-1 text-center text-xs text-gray-500 font-mono">— / —</span>
+      <button id="btn-next" disabled class="flex-none px-2 py-0.5 text-xs bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Next →</button>
+    </div>
+    <div class="flex gap-1">
+      <input id="jump-input" class="flex-1 min-w-0 text-xs border dark:border-gray-600 dark:bg-gray-700 rounded px-2 py-0.5 dark:placeholder-gray-400" placeholder="ID or #N">
+      <button id="btn-jump" class="text-xs px-2 py-0.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded transition-colors">Go</button>
+    </div>
+    <button id="btn-next-unreviewed" class="w-full text-xs px-2 py-1 bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 text-amber-700 dark:text-amber-300 rounded transition-colors">Next Unreviewed ↓</button>
+    <button id="btn-next-disagreement" class="w-full text-xs px-2 py-1 bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700/50 text-orange-700 dark:text-orange-300 rounded transition-colors">Next Disagreement ↓</button>
+  </div>
+
+  <!-- Save / Export / Import -->
+  <div class="px-3 py-2.5 border-b dark:border-gray-700 space-y-1">
+    <div class="flex gap-1">
+      <button id="btn-save"        class="flex-1 text-xs py-1 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors">Save</button>
+      <button id="btn-export-json" class="flex-1 text-xs py-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded transition-colors">JSON</button>
+      <button id="btn-export-csv"  class="flex-1 text-xs py-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded transition-colors">CSV</button>
+    </div>
+    <button id="btn-import" class="w-full text-xs py-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded transition-colors">Import annotations…</button>
+    <input id="import-input" type="file" accept=".json,.csv" class="hidden">
+    <div id="save-indicator" hidden class="text-xs text-green-600 text-center">✓ Saved</div>
+  </div>
+
+  <!-- Search -->
+  <div class="px-3 py-2.5 border-b dark:border-gray-700">
+    <div class="flex items-center gap-1.5 border dark:border-gray-600 rounded px-2 py-1 bg-gray-50 dark:bg-gray-700 focus-within:ring-1 ring-blue-400">
+      <span class="text-gray-400 text-xs">⌕</span>
+      <input id="search-input" class="flex-1 min-w-0 text-xs bg-transparent outline-none dark:placeholder-gray-500" placeholder="Search examples…">
+    </div>
+    <div id="search-count" hidden class="text-xs text-gray-400 text-center mt-1"></div>
+  </div>
+
+  <!-- Filters -->
+  <div class="px-3 py-2.5 flex-1">
+    <button id="btn-toggle-filters" class="flex items-center justify-between w-full text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+      <span>Filters</span>
+      <span id="filter-active-badge" hidden class="badge bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300">0 active</span>
+    </button>
+    <div id="filters-content" class="space-y-3">
+      <div>
+        <div class="text-xs text-gray-400 mb-1">Review status</div>
+        <div class="space-y-0.5">
+          <label class="cb-label text-xs"><input type="radio" name="filter-review" value="all" checked class="accent-blue-500 mt-0.5"> All</label>
+          <label class="cb-label text-xs"><input type="radio" name="filter-review" value="reviewed"   class="accent-blue-500 mt-0.5"> Reviewed</label>
+          <label class="cb-label text-xs"><input type="radio" name="filter-review" value="unreviewed" class="accent-blue-500 mt-0.5"> Unreviewed</label>
+        </div>
+      </div>
+      <div>
+        <label class="cb-label text-xs">
+          <input type="checkbox" id="filter-disagreements" class="accent-orange-500 mt-0.5">
+          <span>Disagreements only</span>
+        </label>
+      </div>
+      <div>
+        <div class="text-xs text-gray-400 mb-1">Heuristic bucket</div>
+        <div id="filter-buckets" class="space-y-0.5"></div>
+      </div>
+      <div>
+        <div class="text-xs text-gray-400 mb-1">Evaluator label</div>
+        <div id="filter-eval-labels" class="space-y-0.5"></div>
+      </div>
+    </div>
+  </div>
+
+</aside>
+
+<!-- ─── CENTER PANEL ─────────────────────────────────────────────────── -->
+<main id="center-panel" class="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900">
+
+  <!-- Empty state -->
+  <div id="empty-state" class="flex flex-col items-center justify-center h-full text-center p-10">
+    <div class="text-5xl mb-5">📋</div>
+    <h2 class="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">AmbigDocs Error Review Dashboard</h2>
+    <p class="text-sm text-gray-400 max-w-md mb-3">
+      Drop <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">ambigdocs_stratified_error_samples.jsonl</code>
+      onto the left panel to begin reviewing.
+      <br>Or load any run's <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">inputs.jsonl</code>
+      (+ optionally evaluations / retrievals / predictions).
+    </p>
+    <p id="auto-load-status" class="text-xs text-gray-400">Checking for bundled data…</p>
+  </div>
+
+  <!-- Example view -->
+  <div id="example-view" hidden class="p-4 max-w-3xl">
+
+    <!-- Example header -->
+    <div class="flex items-center flex-wrap gap-2 mb-3">
+      <span id="example-id-badge" class="font-mono text-xs bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded text-gray-700 dark:text-gray-300"></span>
+      <span id="heuristic-bucket-badge" class="badge"></span>
+      <span id="score-badge" class="badge bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"></span>
+      <span id="reviewed-badge" hidden class="badge bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300">✓ Reviewed</span>
+      <span id="flagged-badge"  hidden class="badge bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300">⚑ Flagged</span>
+    </div>
+
+    <!-- Disagreement banner -->
+    <div id="disagreement-banner" hidden
+         class="mb-3 px-3 py-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded text-orange-700 dark:text-orange-200 text-xs font-medium">
+      ⚠ Human label disagrees with heuristic bucket — please verify classification.
+    </div>
+
+    <!-- Question -->
+    <div class="mb-3 p-3 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 shadow-sm">
+      <div class="flex items-center gap-2 mb-1.5">
+        <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Question</span>
+        <span id="entity-badge" hidden class="badge bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300"></span>
+      </div>
+      <div id="question-text" class="font-medium leading-snug"></div>
+    </div>
+
+    <!-- Gold & Prediction -->
+    <div class="grid grid-cols-2 gap-3 mb-3">
+      <div class="p-3 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 shadow-sm">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Gold Answers</span>
+          <span id="gold-count-badge" class="badge bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400"></span>
+        </div>
+        <div id="gold-answers" class="flex flex-wrap gap-1.5"></div>
+      </div>
+      <div class="p-3 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 shadow-sm">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Prediction</span>
+          <span id="pred-count-badge" class="badge bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400"></span>
+        </div>
+        <div id="pred-answers" class="flex flex-wrap gap-1.5 mb-2"></div>
+        <div id="raw-output-wrap" hidden>
+          <div class="text-xs text-gray-400 mb-1">Raw output</div>
+          <pre id="raw-output" class="text-xs bg-gray-50 dark:bg-gray-700/60 rounded p-2 whitespace-pre-wrap font-mono overflow-auto max-h-28 text-gray-600 dark:text-gray-300 border dark:border-gray-600"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="flex flex-wrap gap-x-4 gap-y-1 mb-3 text-xs text-gray-500 dark:text-gray-400 p-2 bg-white dark:bg-gray-800 rounded border dark:border-gray-700">
+      <span>Score: <strong id="score-value" class="text-gray-800 dark:text-gray-200 font-mono"></strong></span>
+      <span class="text-gray-200 dark:text-gray-700">|</span>
+      <span>Gold support ratio: <strong id="gold-support-value" class="font-mono text-gray-800 dark:text-gray-200"></strong></span>
+      <span class="text-gray-200 dark:text-gray-700">|</span>
+      <span>Full support: <strong id="full-support-value"></strong></span>
+      <span class="text-gray-200 dark:text-gray-700">|</span>
+      <span>All pred supported: <strong id="pred-support-value"></strong></span>
+    </div>
+
+    <!-- Passages -->
+    <div class="mb-3 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 shadow-sm overflow-hidden">
+      <div class="flex items-center justify-between px-3 py-2 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-750">
+        <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Retrieved Passages</span>
+        <div class="flex gap-3 text-xs">
+          <button id="btn-expand-all"   class="text-blue-500 hover:underline">Expand All</button>
+          <button id="btn-collapse-all" class="text-blue-500 hover:underline">Collapse All</button>
+        </div>
+      </div>
+      <div id="passages-list"></div>
+      <div id="no-passages" hidden class="p-4 text-xs text-gray-400 text-center">No retrieved passages for this example</div>
+    </div>
+
+    <!-- Prompt (collapsible) -->
+    <div id="prompt-section" hidden class="mb-4">
+      <button id="btn-toggle-prompt" class="text-xs text-blue-500 hover:underline">▶ Show Prompt</button>
+      <pre id="prompt-body" hidden class="mt-2 text-xs bg-gray-50 dark:bg-gray-800 border dark:border-gray-700 rounded p-3 whitespace-pre-wrap font-mono overflow-auto max-h-64 text-gray-600 dark:text-gray-300"></pre>
+    </div>
+
+  </div><!-- /example-view -->
+</main>
+
+<!-- ─── RIGHT SIDEBAR ────────────────────────────────────────────────── -->
+<aside class="w-72 flex-none flex flex-col border-l dark:border-gray-700 bg-white dark:bg-gray-800 overflow-y-auto">
+  <div id="annotation-panel" class="p-3 space-y-4">
+
+    <!-- Heuristic → Human comparison -->
+    <div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-750 border dark:border-gray-700 text-xs">
+      <div class="font-semibold text-gray-400 mb-1.5 uppercase tracking-wider" style="font-size:.65rem">Heuristic → Human</div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <span id="heuristic-label-display" class="badge bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">—</span>
+        <span class="text-gray-400">→</span>
+        <span id="human-cause-display" class="badge bg-gray-100 dark:bg-gray-700 text-gray-400 italic">not annotated</span>
+      </div>
+    </div>
+
+    <!-- Output Category -->
+    <div>
+      <div class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
+        Output Category <span class="kbd normal-case">1–6</span>
+      </div>
+      <div id="output-category-radios" class="space-y-0.5"></div>
+    </div>
+
+    <!-- Retrieval Support -->
+    <div>
+      <div class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Retrieval Support</div>
+      <div id="retrieval-support-radios" class="space-y-0.5"></div>
+    </div>
+
+    <!-- Primary Failure Cause -->
+    <div>
+      <div class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Primary Failure Cause</div>
+      <div id="primary-cause-radios" class="space-y-0.5"></div>
+    </div>
+
+    <!-- Secondary Tags -->
+    <div>
+      <div class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Secondary Tags</div>
+      <div id="secondary-tag-checkboxes" class="space-y-0.5"></div>
+      <div class="flex gap-1 mt-2">
+        <input id="custom-tag-input" class="flex-1 min-w-0 text-xs border dark:border-gray-600 dark:bg-gray-700 rounded px-2 py-1 dark:placeholder-gray-400" placeholder="Custom tag…">
+        <button id="btn-add-custom-tag" class="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 border dark:border-gray-600 rounded transition-colors">+</button>
+      </div>
+      <div id="custom-tags-list" class="flex flex-wrap gap-1 mt-1.5"></div>
+    </div>
+
+    <!-- Notes -->
+    <div>
+      <label class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5 block" for="notes-textarea">
+        Notes <span class="kbd normal-case">N</span>
+      </label>
+      <textarea id="notes-textarea" rows="4"
+        class="w-full text-xs border dark:border-gray-600 dark:bg-gray-700 rounded px-2 py-1.5 resize-y focus:outline-none focus:ring-1 ring-blue-400 dark:placeholder-gray-500"
+        placeholder="Free-text annotation notes…"></textarea>
+    </div>
+
+    <!-- Status -->
+    <div class="flex items-center gap-5 pt-1 border-t dark:border-gray-700">
+      <label class="cb-label text-xs">
+        <input type="checkbox" id="reviewed-checkbox" class="accent-green-500 mt-0.5">
+        <span>Reviewed <span class="kbd normal-case">R</span></span>
+      </label>
+      <label class="cb-label text-xs">
+        <input type="checkbox" id="flagged-checkbox" class="accent-purple-500 mt-0.5">
+        <span>Flagged <span class="kbd normal-case">F</span></span>
+      </label>
+    </div>
+
+    <!-- Rubric reference -->
+    <div class="border-t dark:border-gray-700 pt-2">
+      <button id="btn-toggle-rubric" class="text-xs text-blue-500 hover:underline">▶ Annotation Rubric</button>
+      <div id="rubric-content" hidden class="mt-2 text-xs overflow-y-auto max-h-96 pr-1 pl-0.5 leading-relaxed"></div>
+    </div>
+
+  </div>
+</aside>
+
+</div><!-- /flex main -->
+
+<!-- ═══════ MODALS ════════════════════════════════════════════════════════ -->
+
+<!-- Shortcuts -->
+<div id="modal-shortcuts" hidden class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+     onclick="if(event.target===this)closeModal('modal-shortcuts')">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 max-h-[85vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="font-bold text-base">Keyboard Shortcuts</h2>
+      <button onclick="closeModal('modal-shortcuts')" class="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+    </div>
+    <table class="w-full text-xs border-collapse" id="shortcuts-table">
+      <tbody id="shortcuts-table-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Taxonomy -->
+<div id="modal-taxonomy" hidden class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+     onclick="if(event.target===this)closeModal('modal-taxonomy')">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-w-5xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="font-bold text-base">AmbigDocs Error Taxonomy</h2>
+      <button onclick="closeModal('modal-taxonomy')" class="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+    </div>
+    <div id="taxonomy-table-container"></div>
+  </div>
+</div>
+
+<!-- Summary -->
+<div id="modal-summary" hidden class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+     onclick="if(event.target===this)closeModal('modal-summary')">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="font-bold text-base">Review Summary &amp; Analytics</h2>
+      <button onclick="closeModal('modal-summary')" class="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+    </div>
+    <div id="summary-content"></div>
+  </div>
+</div>
+
+<!-- ═══════ SCRIPT ════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ════════════════════════════════════════════════════════════════════════════
+// §1  CONSTANTS
+// ════════════════════════════════════════════════════════════════════════════
+
+const LS_KEY = 'ambigdocs_review_v1';
+
+const OUTPUT_LABELS = [
+  { value:'complete',                label:'Complete',                shortcut:'1' },
+  { value:'single_answer_collapse',  label:'Single-answer collapse',  shortcut:'2' },
+  { value:'partial_recall',          label:'Partial recall',          shortcut:'3' },
+  { value:'entity_merge',            label:'Entity merge',            shortcut:'4' },
+  { value:'wrong_selection_or_shape',label:'Wrong selection/shape',   shortcut:'5' },
+  { value:'unsupported_generation',  label:'Unsupported generation',  shortcut:'6' },
+];
+
+const RETRIEVAL_SUPPORT_LABELS = [
+  { value:'all_gold_supported',     label:'All gold supported'     },
+  { value:'partial_gold_supported', label:'Partial gold supported' },
+  { value:'no_gold_supported',      label:'No gold supported'      },
+  { value:'unclear',                label:'Unclear'                },
+];
+
+const PRIMARY_CAUSE_LABELS = [
+  { value:'retrieval_missing_support',         label:'Retrieval missing support'         },
+  { value:'omitted_supported_answers',         label:'Omitted supported answers'         },
+  { value:'wrong_entity_selection',            label:'Wrong entity selection'            },
+  { value:'answer_shape_or_normalization',     label:'Answer shape / normalization'      },
+  { value:'entity_blending',                   label:'Entity blending'                   },
+  { value:'unsupported_inference_or_abstention',label:'Unsupported inference / abstention'},
+  { value:'other',                             label:'Other'                             },
+];
+
+const SECONDARY_TAGS = [
+  'multi_answer_prompt_not_followed',
+  'extra_distractor_answers',
+  'wrong_granularity',
+  'wrong_time_slice',
+  'wrong_location_slice',
+  'formatting_noise',
+  'document_reference_noise',
+  'abstained_despite_evidence',
+  'retrieval_contains_distractor_entities',
+  'retrieval_contains_only_subset_of_entities',
+];
+
+const RETRIEVAL_LIMITED_CAUSES  = new Set(['retrieval_missing_support']);
+const RETRIEVAL_LIMITED_BUCKETS = new Set([
+  'retrieval_missing_support_plus_partial_recall','wrong',
+]);
+
+const SHORTCUTS_LIST = [
+  ['→ / j',      'Next example'],
+  ['← / k',      'Previous example'],
+  ['u',          'Next unreviewed'],
+  ['d',          'Next disagreement'],
+  ['r',          'Toggle reviewed'],
+  ['f',          'Toggle flagged'],
+  ['n',          'Focus notes'],
+  ['1–6',        'Set output category'],
+  ['s / Ctrl+S', 'Save'],
+  ['Ctrl+E',     'Export JSON'],
+  ['?',          'Show shortcuts'],
+  ['Esc',        'Close modal'],
+];
+
+const TAXONOMY_DATA = [
+  { group:'retrieval_limited',
+    error_type:'Retrieval missing support',
+    definition:'The retrieved set appears not to contain support for the full gold answer set, so even a perfect generator could not fully solve the example from the available evidence.',
+    count:1065, pct:29.5,
+    canonical_example_1:'Q: "What does JPO refer to?" Gold: [Japan Patent Office; Johannesburg Philharmonic Orchestra]. Pred: ["Japan Patent Office"].',
+    canonical_example_2:'Q: "What does SGU refer to?" Gold has 5 valid expansions. Pred returns only [Swiss German University; Stargate Universe], consistent with partial retrieval support.',
+    interpretation:'Mainly a retrieval-stage failure. Prioritize better ambiguity-aware recall, denser entity coverage, or explicit entity expansion before generation.' },
+  { group:'post_retrieval',
+    error_type:'Supported but omitted valid answers',
+    definition:'All gold answers appear to be supported somewhere in the retrieved set, but the model lists only a subset of them.',
+    count:825, pct:22.9,
+    canonical_example_1:'Q: "Where was Expo \'29 held?" Gold: [Seville, Spain; Newcastle, Tyne and Wear, England; 1929 Barcelona International Exposition]. Pred: [Newcastle, Tyne and Wear; Seville, Spain].',
+    canonical_example_2:'Q: "What is the profession of Yang Dan?" Gold: [Chemist and chemical biologist; Neuroscientist; Author/co-author of over 20 patents...]. Pred: [Chemist and chemical biologist; Neuroscientist].',
+    interpretation:'Post-retrieval aggregation failure. Evidence exists, but the model does not complete the answer set.' },
+  { group:'post_retrieval',
+    error_type:'Single-answer collapse',
+    definition:'The model treats an inherently multi-answer ambiguity case as ordinary single-answer QA and returns only one referent or one answer.',
+    count:478, pct:13.2,
+    canonical_example_1:'Q: "When was David Simpkins born?" Gold: [29 May 1934; 1962]. Pred: [29 May 1934].',
+    canonical_example_2:'Q: "Who is Graze?" Gold contains 3 valid referents. Pred returns only one referent: [American spy and economist from New York City].',
+    interpretation:'Answer-mode failure. The model is not reliably adopting the multi-answer behavior requested by the prompt.' },
+  { group:'post_retrieval',
+    error_type:'Supported but wrong selection/shape',
+    definition:'Relevant evidence is present, but the model still fails because it chooses the wrong granularity, wrong referent, wrong framing, or an evaluator-sensitive answer form.',
+    count:534, pct:14.8,
+    canonical_example_1:'Q: "What is Nasrullah?" Gold: [A 16th-century stone arch bridge; A 16th-century Ottoman mosque in Kastamonu, Turkey]. Pred: [Nasrullah Mosque; Nasrullah Bridge].',
+    canonical_example_2:'Q: "What does PIAS stand for?" Gold requires both the company description and the label origin. Pred: [Play It Again Sam].',
+    interpretation:'Not a retrieval miss. The model is reading the right evidence but outputting the wrong abstraction level or answer form.' },
+  { group:'post_retrieval',
+    error_type:'Supported but unsupported generation',
+    definition:'Gold-supporting evidence is present, but the model adds unsupported details, drops supported specifics, or answers in a way not licensed by the retrieved text.',
+    count:137, pct:3.8,
+    canonical_example_1:'Q: "When was Jim Stevenson born?" Gold: [1935 in Falkirk; 17 May 1992 in Luton, Bedfordshire]. Pred: [17 May 1992; 1935 (exact date not specified)].',
+    canonical_example_2:'Q: "When was Stuart Elliott born?" Gold: [27 August 1977; 23 July 1978; 22 May 1953]. Pred: [1953; 1977; 1978].',
+    interpretation:'Reasoning/normalization failure with evidence present. Candidate fixes include answer extraction constraints or evidence-linked decoding.' },
+  { group:'post_retrieval',
+    error_type:'Entity merge',
+    definition:'The model blends multiple referents, senses, or answer types into a mixed response instead of cleanly separating them.',
+    count:26, pct:0.7,
+    canonical_example_1:'Q: "What is \'Crazy Rich Asians\'?" Gold separates novel and film senses. Pred gives two mixed descriptions, including a film answer explicitly tied back to the novel.',
+    canonical_example_2:'Q: "What is Ethelton?" Gold: [A suburb; A railway station]. Pred adds both plus unrelated district information, blending referents into one response.',
+    interpretation:'Classic disambiguation failure. Rare here, but conceptually important because it indicates cross-entity contamination rather than simple omission.' },
+  { group:'complete',
+    error_type:'Complete (reference row)',
+    definition:'The model returns all valid answers required by the example.',
+    count:545, pct:15.1,
+    canonical_example_1:'Q: "Who is the artist of the album \'Feel Good\'?" Gold: [Che\'Nelle; The Internet]. Pred: [The Internet; Che\'Nelle].',
+    canonical_example_2:'',
+    interpretation:'Useful as a reference row when comparing failure modes against a successful multi-answer baseline.' },
+];
+
+const RUBRIC_HTML = `
+<h3 class="font-semibold text-xs mb-2 text-gray-700 dark:text-gray-300">AmbigDocs Error Annotation Rubric</h3>
+<p class="text-gray-500 dark:text-gray-400 mb-3">Run: hybrid retrieval + reranking + Qwen2.5-32B-Instruct. Goal: separate retrieval failures from post-retrieval reasoning failures.</p>
+
+<h4 class="font-semibold mt-3 mb-1 text-gray-600 dark:text-gray-300">1) Output category</h4>
+<ul class="space-y-1 text-gray-600 dark:text-gray-400 ml-1">
+  <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">complete</code> — Returns all valid answers.</li>
+  <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">single_answer_collapse</code> — Only one answer for multi-answer case.</li>
+  <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">partial_recall</code> — Some but not all valid answers.</li>
+  <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">entity_merge</code> — Blends distinct entities into mixed response.</li>
+  <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">wrong_selection_or_shape</code> — Grounded but wrong granularity/entity/framing.</li>
+  <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">unsupported_generation</code> — Unsupported content, or abstains incorrectly.</li>
+</ul>
+
+<h4 class="font-semibold mt-3 mb-1 text-gray-600 dark:text-gray-300">2) Retrieval support</h4>
+<ul class="space-y-1 text-gray-600 dark:text-gray-400 ml-1">
+  <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">all_gold_supported</code> — Every gold answer supported by at least one passage.</li>
+  <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">partial_gold_supported</code> — Only some gold answers in retrieved set.</li>
+  <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">no_gold_supported</code> — No gold answers in retrieved set.</li>
+</ul>
+
+<h4 class="font-semibold mt-3 mb-1 text-gray-600 dark:text-gray-300">3) Primary failure cause</h4>
+<ul class="space-y-1 text-gray-600 dark:text-gray-400 ml-1">
+  <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">retrieval_missing_support</code> — Gold answers absent from retrieval.</li>
+  <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">omitted_supported_answers</code> — Evidence present, model lists subset only.</li>
+  <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">wrong_entity_selection</code> — Evidence present, model picks wrong sense.</li>
+  <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">answer_shape_or_normalization</code> — Close but wrong form/phrasing.</li>
+  <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">entity_blending</code> — Mixes properties across distinct entities.</li>
+  <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">unsupported_inference_or_abstention</code> — Invents content or abstains incorrectly.</li>
+</ul>
+
+<h4 class="font-semibold mt-3 mb-1 text-gray-600 dark:text-gray-300">4) Decision procedure</h4>
+<p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+  <strong>Step A:</strong> Could a perfect generator produce the full gold set from retrieved passages?
+  <br>→ No: <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">retrieval_missing_support</code>
+  <br><strong>Step B:</strong> Did the model return all valid answers?
+  <br>→ Yes: <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">complete</code> | One answer: <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">single_answer_collapse</code> | Some: <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">partial_recall</code>
+  <br><strong>Step C:</strong> Distinguish:
+  <br>Incomplete but supported → <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">omitted_supported_answers</code>
+  <br>Misframed/evaluator-sensitive → <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">answer_shape_or_normalization</code>
+  <br>Unsupported/abstains → <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">unsupported_inference_or_abstention</code>
+  <br>Senses blended → <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">entity_blending</code>
+</p>
+`;
+
+// ════════════════════════════════════════════════════════════════════════════
+// §2  STATE
+// ════════════════════════════════════════════════════════════════════════════
+
+const state = {
+  allExamples:      [],
+  filteredExamples: [],
+  currentIndex:     0,
+  annotations:      {},
+  filters: {
+    heuristicBuckets:  [],
+    evaluatorLabels:   [],
+    reviewStatus:      'all',
+    humanOutputLabels: [],
+    onlyDisagreements: false,
+    secondaryTag:      null,
+  },
+  searchText: '',
+  passageTextMap: {},  // passage_id → {text, source, retrieval_score}
+  rawBuffers: { inputs:null, predictions:null, evaluations:null, retrievals:null, prompts:null },
+};
+
+let _saveTimer   = null;
+let _filterTimer = null;
+
+// ════════════════════════════════════════════════════════════════════════════
+// §3  UTILITIES  (identical logic mirrored in tests/unit/test_dashboard_core.js)
+// ════════════════════════════════════════════════════════════════════════════
+
+function escapeHTML(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function parseJSONL(text) {
+  return text.split('\n').map(l=>l.trim()).filter(l=>l.length>0).map(l=>JSON.parse(l));
+}
+
+function splitCSVRow(row) {
+  const fields=[]; let cur='',inQ=false;
+  for(let i=0;i<row.length;i++){
+    const ch=row[i];
+    if(ch==='"'){if(inQ&&row[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+    else if(ch===','&&!inQ){fields.push(cur);cur='';}
+    else cur+=ch;
+  }
+  fields.push(cur); return fields;
+}
+
+function parseCSV(text) {
+  const lines=text.split('\n').map(l=>l.trimEnd()).filter(l=>l.length);
+  if(!lines.length) return [];
+  const headers=splitCSVRow(lines[0]);
+  return lines.slice(1).map(line=>{
+    const vals=splitCSVRow(line),obj={};
+    headers.forEach((h,i)=>{obj[h]=vals[i]!==undefined?vals[i]:'';});
+    return obj;
+  });
+}
+
+function normalizeStratifiedRecord(raw) {
+  return {
+    example_id:       raw.example_id,
+    question:         raw.question,
+    gold_answers:     Array.isArray(raw.gold_answers)?raw.gold_answers:[],
+    pred_answers:     Array.isArray(raw.pred_answers)?raw.pred_answers:[],
+    raw_model_output: raw.raw_model_output||'',
+    heuristic_bucket: raw.heuristic_cause||raw.category||'',
+    evaluator_label:  raw.category||'',
+    score:            typeof raw.score==='number'?raw.score:null,
+    gold_support_ratio: typeof raw.gold_support_ratio==='number'?raw.gold_support_ratio:null,
+    full_gold_support:  raw.full_gold_support===true,
+    all_pred_supported: raw.all_pred_supported===true,
+    retrieved_passages: buildPassagesFromStratified(raw),
+    prompt_text:      null,
+    ambiguous_entity: null,
+    metadata:{dataset:'ambigdocs',source:'stratified',note:raw.note||''},
+  };
+}
+
+function buildPassagesFromStratified(raw) {
+  if(!raw.retrieved_sources_top5) return [];
+  return raw.retrieved_sources_top5.map((src,i)=>({
+    passage_id: (raw.used_passage_ids_top5||[])[i]||String(i),
+    text:'', source:src, retrieval_score:null, rank:i+1,
+  }));
+}
+
+function normalizeRawRunRecords({inputs,predictions,evaluations,retrievals,prompts}) {
+  const predMap    = Object.fromEntries((predictions||[]).map(p=>[p.example_id,p]));
+  const evalMap    = Object.fromEntries((evaluations||[]).map(e=>[e.example_id,e]));
+  const retrMap    = Object.fromEntries((retrievals||[]).map(r=>[r.example_id,r]));
+  const promptMap  = Object.fromEntries((prompts||[]).map(p=>[p.example_id,p]));
+  return (inputs||[]).map(inp=>{
+    const pred=predMap[inp.example_id]||{};
+    const ev=evalMap[inp.example_id]||{};
+    const retr=retrMap[inp.example_id]||{};
+    const pr=promptMap[inp.example_id]||{};
+    const m=ev.metrics||{};
+    return {
+      example_id:       inp.example_id,
+      question:         inp.question,
+      gold_answers:     inp.gold&&inp.gold.multi_answers?inp.gold.multi_answers
+                        :inp.gold&&inp.gold.single_answer?[inp.gold.single_answer]:[],
+      pred_answers:     pred.parsed_output&&pred.parsed_output.multi_answers?pred.parsed_output.multi_answers
+                        :pred.parsed_output&&pred.parsed_output.single_answer?[pred.parsed_output.single_answer]:[],
+      raw_model_output: pred.raw_model_output||'',
+      heuristic_bucket: m.answer_category||'',
+      evaluator_label:  m.answer_category||'',
+      score:            typeof m.multi_answer_score==='number'?m.multi_answer_score
+                        :typeof m.normalized_match==='boolean'?(m.normalized_match?1:0):null,
+      gold_support_ratio:  null,
+      full_gold_support:   null,
+      all_pred_supported:  null,
+      retrieved_passages:  retr.retrieved_passages||[],
+      prompt_text:         pr.prompt_text||null,
+      ambiguous_entity:    inp.metadata&&inp.metadata.extra?inp.metadata.extra.ambiguous_entity||null:null,
+      metadata:{dataset:inp.metadata&&inp.metadata.dataset||'',split:inp.metadata&&inp.metadata.split||''},
+    };
+  });
+}
+
+function computeDisagreement(heuristic_bucket, human_primary_failure_cause) {
+  if(!human_primary_failure_cause) return false;
+  const hR=RETRIEVAL_LIMITED_CAUSES.has(human_primary_failure_cause);
+  const bR=RETRIEVAL_LIMITED_BUCKETS.has(heuristic_bucket);
+  const hC=(human_primary_failure_cause===''||human_primary_failure_cause==='none');
+  const bC=(heuristic_bucket==='complete');
+  if(hR!==bR) return true;
+  if(hC!==bC) return true;
+  return false;
+}
+
+function applyFilters(examples, filters, searchText, annotations) {
+  let r=examples;
+  if(filters.heuristicBuckets&&filters.heuristicBuckets.length){
+    const s=new Set(filters.heuristicBuckets);
+    r=r.filter(e=>s.has(e.heuristic_bucket));
+  }
+  if(filters.evaluatorLabels&&filters.evaluatorLabels.length){
+    const s=new Set(filters.evaluatorLabels);
+    r=r.filter(e=>s.has(e.evaluator_label));
+  }
+  if(filters.reviewStatus==='reviewed')   r=r.filter(e=>annotations[e.example_id]&&annotations[e.example_id].reviewed);
+  if(filters.reviewStatus==='unreviewed') r=r.filter(e=>!annotations[e.example_id]||!annotations[e.example_id].reviewed);
+  if(filters.humanOutputLabels&&filters.humanOutputLabels.length){
+    const s=new Set(filters.humanOutputLabels);
+    r=r.filter(e=>{const a=annotations[e.example_id];return a&&s.has(a.human_output_label);});
+  }
+  if(filters.onlyDisagreements){
+    r=r.filter(e=>{const a=annotations[e.example_id];return a&&computeDisagreement(e.heuristic_bucket,a.human_primary_failure_cause);});
+  }
+  if(filters.secondaryTag){
+    r=r.filter(e=>{const a=annotations[e.example_id];return a&&a.human_secondary_tags&&a.human_secondary_tags.includes(filters.secondaryTag);});
+  }
+  if(searchText&&searchText.trim()){
+    const q=searchText.toLowerCase();
+    r=r.filter(e=>
+      e.question.toLowerCase().includes(q)||
+      (e.ambiguous_entity&&e.ambiguous_entity.toLowerCase().includes(q))||
+      e.gold_answers.some(a=>a.toLowerCase().includes(q))||
+      e.pred_answers.some(a=>a.toLowerCase().includes(q))||
+      e.retrieved_passages.some(p=>p.source&&p.source.toLowerCase().includes(q))
+    );
+  }
+  return r;
+}
+
+function findNextUnreviewed(filtered, cur, annotations) {
+  for(let i=cur+1;i<filtered.length;i++) if(!annotations[filtered[i].example_id]||!annotations[filtered[i].example_id].reviewed) return i;
+  for(let i=0;i<cur;i++) if(!annotations[filtered[i].example_id]||!annotations[filtered[i].example_id].reviewed) return i;
+  return cur;
+}
+
+function findNextDisagreement(filtered, cur, annotations) {
+  for(let i=cur+1;i<filtered.length;i++){const a=annotations[filtered[i].example_id];if(a&&computeDisagreement(filtered[i].heuristic_bucket,a.human_primary_failure_cause))return i;}
+  for(let i=0;i<cur;i++){const a=annotations[filtered[i].example_id];if(a&&computeDisagreement(filtered[i].heuristic_bucket,a.human_primary_failure_cause))return i;}
+  return cur;
+}
+
+const CSV_HEADERS = ['example_id','source_dataset','question','gold_answers','prediction',
+  'evaluator_label','heuristic_bucket','human_output_label','human_retrieval_support',
+  'human_primary_failure_cause','human_secondary_tags','reviewer_notes','reviewed',
+  'flagged_for_adjudication','timestamp_last_modified'];
+
+function toCsvField(v) {
+  if(v===null||v===undefined)return'';
+  const s=String(v);
+  return(s.includes(',')||s.includes('"')||s.includes('\n'))?'"'+s.replace(/"/g,'""')+'"':s;
+}
+
+function exportAnnotationsJSON(examples, annotations) {
+  const records=examples.map(e=>{
+    const a=annotations[e.example_id]||{};
+    return {example_id:e.example_id,source_dataset:'ambigdocs',question:e.question,
+      gold_answers:e.gold_answers,prediction:e.pred_answers,evaluator_label:e.evaluator_label,
+      heuristic_bucket:e.heuristic_bucket,prompt_text:e.prompt_text||null,
+      retrievals:e.retrieved_passages,
+      human_output_label:a.human_output_label||null,
+      human_retrieval_support:a.human_retrieval_support||null,
+      human_primary_failure_cause:a.human_primary_failure_cause||null,
+      human_secondary_tags:a.human_secondary_tags||[],
+      reviewer_notes:a.reviewer_notes||'',
+      reviewed:a.reviewed||false,
+      flagged_for_adjudication:a.flagged_for_adjudication||false,
+      timestamp_last_modified:a.timestamp_last_modified||null};
+  });
+  return JSON.stringify(records,null,2);
+}
+
+function exportAnnotationsCSV(examples, annotations) {
+  const rows=[CSV_HEADERS.join(',')];
+  for(const e of examples){
+    const a=annotations[e.example_id]||{};
+    rows.push([e.example_id,'ambigdocs',e.question,
+      e.gold_answers.join(' | '),e.pred_answers.join(' | '),
+      e.evaluator_label,e.heuristic_bucket,
+      a.human_output_label||'',a.human_retrieval_support||'',
+      a.human_primary_failure_cause||'',
+      (a.human_secondary_tags||[]).join(' | '),
+      a.reviewer_notes||'',a.reviewed?'true':'false',
+      a.flagged_for_adjudication?'true':'false',
+      a.timestamp_last_modified||'',
+    ].map(toCsvField).join(','));
+  }
+  return rows.join('\n');
+}
+
+function highlightText(text, goldTerms, predTerms) {
+  if(!text) return '';
+  const low=text.toLowerCase();
+  const regions=[];
+  function addR(terms,cls){
+    for(const t of terms){
+      const lt=t.toLowerCase().trim();if(!lt)continue;
+      let off=0;while(off<low.length){const i=low.indexOf(lt,off);if(i===-1)break;regions.push([i,i+lt.length,cls]);off=i+1;}
+    }
+  }
+  addR(goldTerms,'gold-mark'); addR(predTerms,'pred-mark');
+  if(!regions.length) return escapeHTML(text);
+  regions.sort((a,b)=>a[0]-b[0]||b[1]-a[1]);
+  let out='',pos=0;
+  for(const [s,e,cls] of regions){
+    if(s<pos)continue;
+    out+=escapeHTML(text.slice(pos,s));
+    out+=`<mark class="${cls}">${escapeHTML(text.slice(s,e))}</mark>`;
+    pos=e;
+  }
+  return out+escapeHTML(text.slice(pos));
+}
+
+function computeSummaryStats(examples, annotations) {
+  const total=examples.length;
+  let reviewed=0;
+  const byHeuristicBucket={},byHumanOutputLabel={},byRetrievalSupport={},byPrimaryCause={};
+  let retrievalLimited=0,postRetrieval=0,complete=0,unclearOther=0;
+  const confHvC={},confEvH={};
+  for(const e of examples){
+    const a=annotations[e.example_id]||{};
+    if(a.reviewed) reviewed++;
+    byHeuristicBucket[e.heuristic_bucket]=(byHeuristicBucket[e.heuristic_bucket]||0)+1;
+    if(a.human_output_label) byHumanOutputLabel[a.human_output_label]=(byHumanOutputLabel[a.human_output_label]||0)+1;
+    if(a.human_retrieval_support) byRetrievalSupport[a.human_retrieval_support]=(byRetrievalSupport[a.human_retrieval_support]||0)+1;
+    if(a.human_primary_failure_cause) byPrimaryCause[a.human_primary_failure_cause]=(byPrimaryCause[a.human_primary_failure_cause]||0)+1;
+    const c=a.human_primary_failure_cause;
+    if(c){if(RETRIEVAL_LIMITED_CAUSES.has(c))retrievalLimited++;else if(!c||c==='none')complete++;else postRetrieval++;}
+    else if(e.heuristic_bucket==='complete')complete++;
+    else if(RETRIEVAL_LIMITED_BUCKETS.has(e.heuristic_bucket))retrievalLimited++;
+    else unclearOther++;
+    if(a.human_primary_failure_cause){
+      const row=e.heuristic_bucket||'(none)',col=a.human_primary_failure_cause;
+      if(!confHvC[row])confHvC[row]={};confHvC[row][col]=(confHvC[row][col]||0)+1;
+    }
+    if(a.human_output_label){
+      const row=e.evaluator_label||'(none)',col=a.human_output_label;
+      if(!confEvH[row])confEvH[row]={};confEvH[row][col]=(confEvH[row][col]||0)+1;
+    }
+  }
+  return {total,reviewed,unreviewed:total-reviewed,
+    pctReviewed:total>0?Math.round(reviewed/total*100):0,
+    byHeuristicBucket,byHumanOutputLabel,byRetrievalSupport,byPrimaryCause,
+    retrievalLimited,postRetrieval,complete,unclearOther,
+    confusionHeuristicVsCause:confHvC,confusionEvalVsHuman:confEvH};
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// §4  PERSISTENCE
+// ════════════════════════════════════════════════════════════════════════════
+
+function loadFromLocalStorage() {
+  try {
+    const raw=localStorage.getItem(LS_KEY);
+    if(raw){
+      const parsed=JSON.parse(raw);
+      if(parsed.annotations) Object.assign(state.annotations, parsed.annotations);
+      if(typeof parsed.last_index==='number') state.currentIndex=parsed.last_index;
+    }
+  } catch(e){ console.warn('LS load error:',e); }
+}
+
+function saveToLocalStorage() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      annotations:state.annotations,
+      last_index:state.currentIndex,
+      saved_at:new Date().toISOString(),
+    }));
+    flashSaveIndicator();
+  } catch(e){ console.warn('LS save error:',e); }
+}
+
+function debouncedSave() {
+  clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(saveToLocalStorage,300);
+}
+
+function flashSaveIndicator() {
+  const el=document.getElementById('save-indicator');
+  el.hidden=false;
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.hidden=true,1800);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// §5  FILE LOADING
+// ════════════════════════════════════════════════════════════════════════════
+
+function detectFileType(name) {
+  const n=name.toLowerCase();
+  if(n.includes('stratified')||n.includes('samples')) return 'stratified';
+  if(n==='inputs.jsonl')      return 'inputs';
+  if(n==='predictions.jsonl') return 'predictions';
+  if(n==='evaluations.jsonl') return 'evaluations';
+  if(n==='retrievals.jsonl')  return 'retrievals';
+  if(n==='prompts.jsonl')     return 'prompts';
+  if(n.endsWith('.jsonl'))    return 'stratified';
+  if(n.endsWith('.csv'))      return 'csv_import';
+  if(n.endsWith('.json'))     return 'json_import';
+  return 'unknown';
+}
+
+function handleFiles(files) {
+  const fileArr=Array.from(files);
+  fileArr.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=e=>processFileContent(file.name, e.target.result);
+    reader.readAsText(file);
+  });
+}
+
+function processFileContent(name, text) {
+  const type=detectFileType(name);
+  if(type==='stratified'){
+    try {
+      const records=parseJSONL(text);
+      const examples=records.map(normalizeStratifiedRecord);
+      loadExamples(examples,'Stratified JSONL');
+    } catch(err){ alert(`Error parsing ${name}:\n${err.message}`); }
+  } else if(type==='retrievals'){
+    try {
+      const records=parseJSONL(text);
+      state.rawBuffers.retrievals=records;
+      enrichExamplesWithRetrievals(records);
+      updateCompanionBanner();
+      if(state.rawBuffers.inputs) tryNormalizeRawRun();
+    } catch(err){ alert(`Error parsing ${name}:\n${err.message}`); }
+  } else if(['inputs','predictions','evaluations','prompts'].includes(type)){
+    try {
+      const records=parseJSONL(text);
+      state.rawBuffers[type]=records;
+      updateCompanionBanner();
+      tryNormalizeRawRun();
+    } catch(err){ alert(`Error parsing ${name}:\n${err.message}`); }
+  } else if(type==='json_import'){
+    try { importAnnotations(text,'json'); }
+    catch(err){ alert(`Error importing ${name}:\n${err.message}`); }
+  } else if(type==='csv_import'){
+    try { importAnnotations(text,'csv'); }
+    catch(err){ alert(`Error importing ${name}:\n${err.message}`); }
+  } else {
+    console.warn('Unknown file type:',name);
+  }
+}
+
+function updateCompanionBanner() {
+  const banner=document.getElementById('companion-banner');
+  // Stratified mode: suggest retrievals.jsonl when passage text is missing
+  if(state.allExamples.length && !state.rawBuffers.inputs){
+    const passagesLoaded=Object.keys(state.passageTextMap).length>0;
+    if(!passagesLoaded){
+      banner.hidden=false;
+      banner.textContent='Drop retrievals.jsonl from an output run to load full passage text.';
+    } else {
+      const cnt=Object.keys(state.passageTextMap).length;
+      banner.hidden=false;
+      banner.className='mt-2 text-xs bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded p-2 text-green-700 dark:text-green-200';
+      banner.textContent='✓ '+cnt+' passages loaded — text shown in cards.';
+    }
+    return;
+  }
+  // Raw run mode
+  if(!state.rawBuffers.inputs){ banner.hidden=true; return; }
+  banner.className='mt-2 text-xs bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded p-2 text-yellow-700 dark:text-yellow-200';
+  const missing=[];
+  if(!state.rawBuffers.predictions)  missing.push('predictions.jsonl');
+  if(!state.rawBuffers.evaluations)  missing.push('evaluations.jsonl');
+  if(!state.rawBuffers.retrievals)   missing.push('retrievals.jsonl');
+  if(missing.length>0){
+    banner.hidden=false;
+    banner.textContent='Also drop to enrich: '+missing.join(', ');
+  } else {
+    banner.hidden=true;
+  }
+}
+
+function enrichExamplesWithRetrievals(records) {
+  // Build passageTextMap and per-example passage map
+  state.passageTextMap={};
+  const exPassageMap={};
+  records.forEach(r=>{
+    if(!r.retrieved_passages) return;
+    exPassageMap[r.example_id]=r.retrieved_passages;
+    r.retrieved_passages.forEach(p=>{
+      if(p.passage_id&&p.text)
+        state.passageTextMap[p.passage_id]={text:p.text,source:p.source,retrieval_score:p.retrieval_score};
+    });
+  });
+  // Enrich allExamples with full ranked passage lists when available
+  if(state.allExamples.length){
+    state.allExamples=state.allExamples.map(e=>{
+      const full=exPassageMap[e.example_id];
+      if(!full) return e;
+      return {...e, retrieved_passages:full};
+    });
+    applyFilterState();
+    renderAll();
+    const cnt=Object.keys(state.passageTextMap).length;
+    const exCnt=Object.keys(exPassageMap).length;
+    document.getElementById('load-status').textContent+=
+      ` · ${cnt} passages enriched across ${exCnt} examples`;
+  }
+}
+
+function tryNormalizeRawRun() {
+  if(!state.rawBuffers.inputs) return;
+  const examples=normalizeRawRunRecords(state.rawBuffers);
+  if(examples.length>0) loadExamples(examples,'Raw run files');
+}
+
+function loadExamples(examples, source) {
+  state.allExamples=examples;
+  // restore previous position
+  const savedIndex=state.currentIndex;
+  applyFilterState();
+  // clamp saved index into filtered range
+  const n=state.filteredExamples.length;
+  state.currentIndex=Math.min(Math.max(0,savedIndex),Math.max(0,n-1));
+  renderAll();
+  document.getElementById('load-status').textContent=
+    `${examples.length} examples loaded (${source})`;
+  document.getElementById('empty-state').hidden=true;
+  document.getElementById('example-view').hidden=false;
+  renderFilterLists();
+  updateCompanionBanner();
+}
+
+async function attemptAutoLoad() {
+  const statusEl=document.getElementById('auto-load-status');
+  try {
+    const resp=await fetch('./ambigdocs_stratified_error_samples.jsonl');
+    if(!resp.ok) throw new Error('not found');
+    const text=await resp.text();
+    const records=parseJSONL(text);
+    const examples=records.map(normalizeStratifiedRecord);
+    loadExamples(examples,'bundled stratified JSONL');
+    statusEl.hidden=true;
+  } catch(_) {
+    statusEl.textContent='No bundled data found — drop files to load.';
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// §6  BUCKET COLORS
+// ════════════════════════════════════════════════════════════════════════════
+
+function getBucketClasses(bucket) {
+  const b=(bucket||'').toLowerCase();
+  if(b==='complete') return 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300';
+  if(b.includes('retrieval_missing')||b.includes('retrieval-limited'))
+    return 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300';
+  if(b.includes('single_answer_collapse')||b.includes('collapse'))
+    return 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300';
+  if(b.includes('entity_merge')||b==='merged')
+    return 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300';
+  if(b.includes('partial')||b.includes('omitted'))
+    return 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300';
+  if(b.includes('unsupported'))
+    return 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
+  if(b.includes('wrong')||b.includes('shape')||b.includes('granularity')||b.includes('selection'))
+    return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300';
+  return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
+}
+
+function shortBucket(bucket) {
+  const map={
+    single_answer_collapse:'single-ans collapse',
+    retrieval_missing_support_plus_partial_recall:'retr missing → partial',
+    support_present_but_omitted_answers:'omitted answers',
+    supported_but_wrong_entity_or_granularity:'wrong entity/granularity',
+    support_present_but_answer_shape_or_entity_selection_error:'answer shape error',
+    unsupported_generation_or_reasoning_error:'unsupported generation',
+    entity_merge:'entity merge',
+  };
+  return map[bucket]||bucket||'—';
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// §7  RENDERING
+// ════════════════════════════════════════════════════════════════════════════
+
+function renderAll() {
+  renderProgress();
+  renderNav();
+  if(state.filteredExamples.length===0){ document.getElementById('example-view').hidden=true; return; }
+  document.getElementById('example-view').hidden=false;
+  const ex=state.filteredExamples[state.currentIndex];
+  if(!ex) return;
+  const ann=state.annotations[ex.example_id]||{};
+  renderExample(ex,ann);
+  renderAnnotationPanel(ex,ann);
+}
+
+function renderProgress() {
+  const total=state.allExamples.length;
+  const reviewed=Object.values(state.annotations).filter(a=>a.reviewed).length;
+  const pct=total>0?Math.round(reviewed/total*100):0;
+  document.getElementById('progress-text').textContent=`${reviewed} reviewed`;
+  document.getElementById('progress-pct').textContent=`${pct}%`;
+  document.getElementById('progress-bar').style.width=pct+'%';
+  document.getElementById('total-count').textContent=`${total} total`;
+  const fEl=document.getElementById('filtered-count');
+  if(state.filteredExamples.length<total)
+    { fEl.textContent=`${state.filteredExamples.length} shown`; fEl.hidden=false; }
+  else fEl.hidden=true;
+}
+
+function renderNav() {
+  const n=state.filteredExamples.length;
+  const i=state.currentIndex;
+  document.getElementById('nav-counter').textContent=n>0?`${i+1} / ${n}`:'0 / 0';
+  document.getElementById('btn-prev').disabled=n===0;
+  document.getElementById('btn-next').disabled=n===0;
+}
+
+function renderFilterLists() {
+  const buckets=[...new Set(state.allExamples.map(e=>e.heuristic_bucket).filter(Boolean))];
+  const labels =[...new Set(state.allExamples.map(e=>e.evaluator_label).filter(Boolean))];
+  renderCheckboxGroup('filter-buckets', buckets, state.filters.heuristicBuckets, v=>{
+    toggleFilterValue(state.filters.heuristicBuckets,v); scheduleFilterUpdate();
+  });
+  renderCheckboxGroup('filter-eval-labels', labels, state.filters.evaluatorLabels, v=>{
+    toggleFilterValue(state.filters.evaluatorLabels,v); scheduleFilterUpdate();
+  });
+}
+
+function renderCheckboxGroup(containerId, values, selected, onChange) {
+  const el=document.getElementById(containerId);
+  el.innerHTML='';
+  values.forEach(v=>{
+    const label=document.createElement('label');
+    label.className='cb-label text-xs';
+    const cb=document.createElement('input');
+    cb.type='checkbox'; cb.value=v;
+    cb.className='accent-blue-500 mt-0.5';
+    cb.checked=selected.includes(v);
+    cb.addEventListener('change',()=>onChange(v));
+    const span=document.createElement('span');
+    span.textContent=v;
+    label.append(cb,' ',span);
+    el.appendChild(label);
+  });
+}
+
+function toggleFilterValue(arr, val) {
+  const i=arr.indexOf(val);
+  if(i>=0) arr.splice(i,1); else arr.push(val);
+}
+
+function renderExample(ex, ann) {
+  // Header
+  document.getElementById('example-id-badge').textContent=ex.example_id;
+  const hb=document.getElementById('heuristic-bucket-badge');
+  hb.className='badge '+getBucketClasses(ex.heuristic_bucket);
+  hb.textContent=shortBucket(ex.heuristic_bucket);
+
+  const scoreNum=ex.score!=null?Math.round(ex.score*100):null;
+  const sb=document.getElementById('score-badge');
+  sb.textContent=scoreNum!=null?`F1: ${scoreNum}%`:'';
+  sb.hidden=scoreNum==null;
+
+  document.getElementById('reviewed-badge').hidden=!ann.reviewed;
+  document.getElementById('flagged-badge').hidden=!ann.flagged_for_adjudication;
+
+  // Disagreement banner
+  const disag=computeDisagreement(ex.heuristic_bucket, ann.human_primary_failure_cause);
+  document.getElementById('disagreement-banner').hidden=!disag;
+
+  // Question
+  document.getElementById('question-text').textContent=ex.question;
+  const eb=document.getElementById('entity-badge');
+  if(ex.ambiguous_entity){ eb.textContent='Entity: '+ex.ambiguous_entity; eb.hidden=false; }
+  else eb.hidden=true;
+
+  // Gold answers
+  const goldEl=document.getElementById('gold-answers');
+  goldEl.innerHTML='';
+  ex.gold_answers.forEach(g=>{
+    const span=document.createElement('span');
+    span.className='chip-gold'; span.textContent=g; goldEl.appendChild(span);
+  });
+  document.getElementById('gold-count-badge').textContent=ex.gold_answers.length+' answers';
+
+  // Predictions
+  const predEl=document.getElementById('pred-answers');
+  predEl.innerHTML='';
+  ex.pred_answers.forEach(p=>{
+    const span=document.createElement('span');
+    const isWrong=ex.evaluator_label==='wrong';
+    span.className=isWrong?'chip-wrong':'chip-pred';
+    span.textContent=p; predEl.appendChild(span);
+  });
+  document.getElementById('pred-count-badge').textContent=ex.pred_answers.length+' answers';
+
+  const rawWrap=document.getElementById('raw-output-wrap');
+  if(ex.raw_model_output){
+    document.getElementById('raw-output').textContent=ex.raw_model_output;
+    rawWrap.hidden=false;
+  } else rawWrap.hidden=true;
+
+  // Stats
+  document.getElementById('score-value').textContent=ex.score!=null?ex.score.toFixed(3):'—';
+  document.getElementById('gold-support-value').textContent=
+    ex.gold_support_ratio!=null?(ex.gold_support_ratio*100).toFixed(0)+'%':'—';
+
+  function boolBadge(val, id) {
+    const el=document.getElementById(id);
+    if(val===null||val===undefined){ el.textContent='—'; el.className=''; return; }
+    el.textContent=val?'yes':'no';
+    el.className=val?'text-green-600 dark:text-green-400 font-semibold':'text-red-500 dark:text-red-400 font-semibold';
+  }
+  boolBadge(ex.full_gold_support,'full-support-value');
+  boolBadge(ex.all_pred_supported,'pred-support-value');
+
+  // Passages
+  renderPassages(ex);
+
+  // Prompt
+  const ps=document.getElementById('prompt-section');
+  if(ex.prompt_text){
+    ps.hidden=false;
+    document.getElementById('prompt-body').textContent=ex.prompt_text;
+    document.getElementById('prompt-body').hidden=true;
+    document.getElementById('btn-toggle-prompt').textContent='▶ Show Prompt';
+  } else ps.hidden=true;
+}
+
+function renderPassages(ex) {
+  const list=document.getElementById('passages-list');
+  const noP=document.getElementById('no-passages');
+  list.innerHTML='';
+  const passages=ex.retrieved_passages||[];
+  if(!passages.length){ noP.hidden=false; return; }
+  noP.hidden=true;
+  passages.forEach((p,i)=>{
+    const card=createPassageCard(p, i<2, ex.gold_answers, ex.pred_answers);
+    list.appendChild(card);
+  });
+}
+
+function createPassageCard(p, expanded, goldTerms, predTerms) {
+  const wrap=document.createElement('div');
+  wrap.className='passage-card';
+
+  const header=document.createElement('div');
+  header.className='collh flex items-center justify-between px-3 py-2 cursor-pointer';
+  header.innerHTML=`
+    <div class="flex items-center gap-2 flex-wrap min-w-0">
+      <span class="badge bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">#${p.rank||'?'}</span>
+      <span class="font-medium text-xs truncate max-w-[200px]" title="${escapeHTML(p.source||'')}">${escapeHTML(p.source||'(no source)')}</span>
+      <span class="text-xs text-gray-400 font-mono">${escapeHTML(String(p.passage_id||''))}</span>
+      ${p.retrieval_score!=null?`<span class="text-xs text-gray-400">${p.retrieval_score.toFixed(4)}</span>`:''}
+    </div>
+    <span class="toggle-icon text-gray-400 ml-2 flex-none">${expanded?'▲':'▼'}</span>`;
+
+  const body=document.createElement('div');
+  body.className='passage-body px-3 py-2 text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-750 border-t dark:border-gray-700';
+  const passageText=p.text||(state.passageTextMap[p.passage_id]&&state.passageTextMap[p.passage_id].text)||'';
+  if(passageText){
+    body.innerHTML=highlightText(passageText, goldTerms, predTerms);
+  } else {
+    body.innerHTML='<span class="italic text-gray-400">(no text — drop retrievals.jsonl from any output run to load passage content)</span>';
+  }
+  if(!expanded) body.hidden=true;
+
+  header.addEventListener('click',()=>{
+    body.hidden=!body.hidden;
+    header.querySelector('.toggle-icon').textContent=body.hidden?'▼':'▲';
+  });
+
+  wrap.append(header, body);
+  return wrap;
+}
+
+function renderAnnotationPanel(ex, ann) {
+  // Comparison row
+  document.getElementById('heuristic-label-display').textContent=shortBucket(ex.heuristic_bucket)||'—';
+  const hd=document.getElementById('human-cause-display');
+  if(ann.human_primary_failure_cause){
+    hd.textContent=ann.human_primary_failure_cause;
+    hd.className='badge '+getBucketClasses(ann.human_primary_failure_cause);
+    hd.classList.remove('italic');
+  } else {
+    hd.textContent='not annotated';
+    hd.className='badge bg-gray-100 dark:bg-gray-700 text-gray-400 italic';
+  }
+
+  // Render radio/checkbox groups and restore values
+  renderRadioGroup('output-category-radios','oc',OUTPUT_LABELS,ann.human_output_label,onAnnotationChange);
+  renderRadioGroup('retrieval-support-radios','rs',RETRIEVAL_SUPPORT_LABELS,ann.human_retrieval_support,onAnnotationChange);
+  renderRadioGroup('primary-cause-radios','pc',PRIMARY_CAUSE_LABELS,ann.human_primary_failure_cause,onAnnotationChange);
+  renderSecondaryTags(ann.human_secondary_tags||[]);
+  renderCustomTags(ann.human_secondary_tags||[]);
+
+  // Notes
+  document.getElementById('notes-textarea').value=ann.reviewer_notes||'';
+  document.getElementById('reviewed-checkbox').checked=ann.reviewed||false;
+  document.getElementById('flagged-checkbox').checked=ann.flagged_for_adjudication||false;
+
+  // Rubric
+  document.getElementById('rubric-content').innerHTML=RUBRIC_HTML;
+}
+
+function renderRadioGroup(containerId, name, labels, selectedValue, onChange) {
+  const el=document.getElementById(containerId);
+  el.innerHTML='';
+  labels.forEach((opt,i)=>{
+    const lbl=document.createElement('label');
+    lbl.className='radio-label text-xs';
+    const radio=document.createElement('input');
+    radio.type='radio'; radio.name=name; radio.value=opt.value;
+    radio.className='accent-blue-500 mt-0.5 flex-none';
+    radio.checked=opt.value===selectedValue;
+    radio.addEventListener('change',onChange);
+    const span=document.createElement('span');
+    span.className='flex-1';
+    if(opt.shortcut){
+      span.innerHTML=`<span class="kbd">${opt.shortcut}</span> ${escapeHTML(opt.label)}`;
+    } else {
+      span.textContent=opt.label;
+    }
+    lbl.append(radio,span);
+    el.appendChild(lbl);
+  });
+}
+
+function renderSecondaryTags(selectedTags) {
+  const el=document.getElementById('secondary-tag-checkboxes');
+  el.innerHTML='';
+  SECONDARY_TAGS.forEach(tag=>{
+    const lbl=document.createElement('label');
+    lbl.className='cb-label text-xs flex-wrap';
+    const cb=document.createElement('input');
+    cb.type='checkbox'; cb.value=tag;
+    cb.className='accent-blue-500 mt-0.5 flex-none';
+    cb.checked=selectedTags.includes(tag);
+    cb.addEventListener('change',onAnnotationChange);
+    const span=document.createElement('span');
+    span.className='break-all';
+    span.textContent=tag;
+    lbl.append(cb,' ',span);
+    el.appendChild(lbl);
+  });
+}
+
+function renderCustomTags(allTags) {
+  const predefinedSet=new Set(SECONDARY_TAGS);
+  const customTags=allTags.filter(t=>!predefinedSet.has(t));
+  const el=document.getElementById('custom-tags-list');
+  el.innerHTML='';
+  customTags.forEach(tag=>{
+    const chip=document.createElement('span');
+    chip.className='inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-full text-xs';
+    chip.innerHTML=`${escapeHTML(tag)} <button class="hover:text-red-500" data-tag="${escapeHTML(tag)}" title="Remove">×</button>`;
+    chip.querySelector('button').addEventListener('click',e=>{
+      removeCustomTag(e.currentTarget.getAttribute('data-tag'));
+    });
+    el.appendChild(chip);
+  });
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// §8  ANNOTATION HANDLERS
+// ════════════════════════════════════════════════════════════════════════════
+
+function getCurrentExample() {
+  return state.filteredExamples[state.currentIndex]||null;
+}
+
+function getCurrentAnnotation() {
+  const ex=getCurrentExample();
+  if(!ex) return null;
+  return state.annotations[ex.example_id]||{};
+}
+
+function readAnnotationFromPanel() {
+  function radioVal(name){ const r=document.querySelector(`input[name="${name}"]:checked`); return r?r.value:null; }
+  function cbVals(id){ return [...document.querySelectorAll(`#${id} input[type=checkbox]:checked`)].map(c=>c.value); }
+  const customTags=getCustomTagsFromDisplay();
+  return {
+    human_output_label:           radioVal('oc'),
+    human_retrieval_support:      radioVal('rs'),
+    human_primary_failure_cause:  radioVal('pc'),
+    human_secondary_tags:         [...cbVals('secondary-tag-checkboxes'),...customTags],
+    reviewer_notes:               document.getElementById('notes-textarea').value,
+    reviewed:                     document.getElementById('reviewed-checkbox').checked,
+    flagged_for_adjudication:     document.getElementById('flagged-checkbox').checked,
+  };
+}
+
+function getCustomTagsFromDisplay() {
+  return [...document.querySelectorAll('#custom-tags-list [data-tag]')].map(b=>b.getAttribute('data-tag'));
+}
+
+function onAnnotationChange() {
+  const ex=getCurrentExample(); if(!ex) return;
+  const ann=readAnnotationFromPanel();
+  ann.timestamp_last_modified=new Date().toISOString();
+  state.annotations[ex.example_id]={...(state.annotations[ex.example_id]||{}),...ann};
+  debouncedSave();
+  // Update comparison row and status badges without full re-render
+  const a=state.annotations[ex.example_id];
+  const hd=document.getElementById('human-cause-display');
+  if(a.human_primary_failure_cause){
+    hd.textContent=a.human_primary_failure_cause;
+    hd.className='badge '+getBucketClasses(a.human_primary_failure_cause);
+    hd.classList.remove('italic');
+  } else {
+    hd.textContent='not annotated';
+    hd.className='badge bg-gray-100 dark:bg-gray-700 text-gray-400 italic';
+  }
+  document.getElementById('reviewed-badge').hidden=!a.reviewed;
+  document.getElementById('flagged-badge').hidden=!a.flagged_for_adjudication;
+  const disag=computeDisagreement(ex.heuristic_bucket,a.human_primary_failure_cause);
+  document.getElementById('disagreement-banner').hidden=!disag;
+  renderProgress();
+}
+
+function addCustomTag() {
+  const input=document.getElementById('custom-tag-input');
+  const tag=input.value.trim();
+  if(!tag) return;
+  input.value='';
+  const ex=getCurrentExample(); if(!ex) return;
+  const existing=state.annotations[ex.example_id]||{};
+  const tags=(existing.human_secondary_tags||[]).filter(t=>t!==tag);
+  tags.push(tag);
+  state.annotations[ex.example_id]={...existing,human_secondary_tags:tags,timestamp_last_modified:new Date().toISOString()};
+  renderCustomTags(tags);
+  debouncedSave();
+}
+
+function removeCustomTag(tag) {
+  const ex=getCurrentExample(); if(!ex) return;
+  const existing=state.annotations[ex.example_id]||{};
+  const tags=(existing.human_secondary_tags||[]).filter(t=>t!==tag);
+  state.annotations[ex.example_id]={...existing,human_secondary_tags:tags,timestamp_last_modified:new Date().toISOString()};
+  renderCustomTags(tags);
+  debouncedSave();
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// §9  NAVIGATION
+// ════════════════════════════════════════════════════════════════════════════
+
+function navigate(delta) {
+  const n=state.filteredExamples.length; if(!n) return;
+  state.currentIndex=Math.max(0,Math.min(n-1,state.currentIndex+delta));
+  renderAll();
+}
+
+function jumpToId(idOrNum) {
+  const s=idOrNum.trim(); if(!s) return;
+  // #N means index into filtered list
+  if(s.startsWith('#')){
+    const n=parseInt(s.slice(1),10)-1;
+    if(!isNaN(n)&&n>=0&&n<state.filteredExamples.length){ state.currentIndex=n; renderAll(); return; }
+  }
+  // exact example_id
+  const idx=state.filteredExamples.findIndex(e=>e.example_id===s||e.example_id.toLowerCase().includes(s.toLowerCase()));
+  if(idx>=0){ state.currentIndex=idx; renderAll(); }
+  else alert(`Example "${s}" not found in filtered list.`);
+}
+
+function goToNextUnreviewed() {
+  const i=findNextUnreviewed(state.filteredExamples,state.currentIndex,state.annotations);
+  if(i!==state.currentIndex){ state.currentIndex=i; renderAll(); }
+}
+
+function goToNextDisagreement() {
+  const i=findNextDisagreement(state.filteredExamples,state.currentIndex,state.annotations);
+  if(i!==state.currentIndex){ state.currentIndex=i; renderAll(); }
+}
+
+function applyFilterState() {
+  state.filteredExamples=applyFilters(state.allExamples,state.filters,state.searchText,state.annotations);
+  state.currentIndex=Math.min(state.currentIndex,Math.max(0,state.filteredExamples.length-1));
+}
+
+function scheduleFilterUpdate() {
+  clearTimeout(_filterTimer);
+  _filterTimer=setTimeout(()=>{ applyFilterState(); renderAll(); renderFilterLists(); },150);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// §10  EXPORT / IMPORT
+// ════════════════════════════════════════════════════════════════════════════
+
+function downloadFile(content, filename, mimeType) {
+  const blob=new Blob([content],{type:mimeType});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); },200);
+}
+
+function exportJSON() {
+  const json=exportAnnotationsJSON(state.allExamples,state.annotations);
+  downloadFile(json,'ambigdocs_annotations.json','application/json');
+}
+
+function exportCSV() {
+  const csv=exportAnnotationsCSV(state.allExamples,state.annotations);
+  downloadFile(csv,'ambigdocs_annotations.csv','text/csv');
+}
+
+function importAnnotations(text, format) {
+  let records=[];
+  if(format==='json'){
+    records=JSON.parse(text);
+    if(!Array.isArray(records)) records=Object.values(records);
+  } else {
+    const rows=parseCSV(text);
+    records=rows.map(r=>({
+      example_id:r.example_id,
+      human_output_label:r.human_output_label||null,
+      human_retrieval_support:r.human_retrieval_support||null,
+      human_primary_failure_cause:r.human_primary_failure_cause||null,
+      human_secondary_tags:r.human_secondary_tags?r.human_secondary_tags.split(' | ').filter(Boolean):[],
+      reviewer_notes:r.reviewer_notes||'',
+      reviewed:r.reviewed==='true',
+      flagged_for_adjudication:r.flagged_for_adjudication==='true',
+      timestamp_last_modified:r.timestamp_last_modified||null,
+    }));
+  }
+  let merged=0;
+  records.forEach(r=>{
+    if(!r.example_id) return;
+    const existing=state.annotations[r.example_id]||{};
+    state.annotations[r.example_id]={...existing,...r};
+    merged++;
+  });
+  saveToLocalStorage();
+  applyFilterState();
+  renderAll();
+  alert(`Imported / merged ${merged} annotation record(s).`);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// §11  SUMMARY
+// ════════════════════════════════════════════════════════════════════════════
+
+function renderSummary() {
+  const s=computeSummaryStats(state.allExamples,state.annotations);
+  const el=document.getElementById('summary-content');
+
+  function countTable(obj,title) {
+    const sorted=Object.entries(obj).sort((a,b)=>b[1]-a[1]);
+    if(!sorted.length) return `<p class="text-xs text-gray-400 mb-4">No data yet.</p>`;
+    let t=`<h3 class="font-semibold text-sm mb-2 mt-4">${escapeHTML(title)}</h3>
+      <table class="text-xs border-collapse w-full mb-4">
+        <thead><tr class="bg-gray-100 dark:bg-gray-700"><th class="text-left px-2 py-1 border dark:border-gray-600">Label</th><th class="px-2 py-1 border dark:border-gray-600 text-right">Count</th><th class="px-2 py-1 border dark:border-gray-600 text-right">%</th></tr></thead><tbody>`;
+    const tot=sorted.reduce((s,[,v])=>s+v,0);
+    sorted.forEach(([k,v])=>{
+      t+=`<tr><td class="px-2 py-1 border dark:border-gray-600">${escapeHTML(k)}</td>
+          <td class="px-2 py-1 border dark:border-gray-600 text-right font-mono">${v}</td>
+          <td class="px-2 py-1 border dark:border-gray-600 text-right font-mono">${tot>0?(v/tot*100).toFixed(1)+'%':''}</td></tr>`;
+    });
+    return t+'</tbody></table>';
+  }
+
+  function confMatrix(mat,title) {
+    const rows=Object.keys(mat); if(!rows.length) return '';
+    const allCols=[...new Set(rows.flatMap(r=>Object.keys(mat[r])))];
+    let html=`<h3 class="font-semibold text-sm mb-2 mt-4">${escapeHTML(title)}</h3>
+      <div class="overflow-x-auto mb-4"><table class="text-xs border-collapse">
+        <thead><tr class="bg-gray-100 dark:bg-gray-700">
+          <th class="px-2 py-1 border dark:border-gray-600 text-left">↓ Heuristic \\ Human →</th>`;
+    allCols.forEach(c=>{ html+=`<th class="px-2 py-1 border dark:border-gray-600">${escapeHTML(c)}</th>`; });
+    html+='</tr></thead><tbody>';
+    rows.forEach(row=>{
+      html+=`<tr><td class="px-2 py-1 border dark:border-gray-600 font-medium">${escapeHTML(row)}</td>`;
+      allCols.forEach(col=>{
+        const v=(mat[row]&&mat[row][col])||0;
+        html+=`<td class="px-2 py-1 border dark:border-gray-600 text-center font-mono ${v>0?'bg-blue-50 dark:bg-blue-900/20':''}">${v||''}</td>`;
+      });
+      html+='</tr>';
+    });
+    return html+'</tbody></table></div>';
+  }
+
+  function pctBar(num,tot,cls) {
+    const pct=tot>0?Math.round(num/tot*100):0;
+    return `<div class="flex items-center gap-2 mb-1"><div class="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2"><div class="h-2 rounded-full ${cls}" style="width:${pct}%"></div></div><span class="text-xs">${num} (${pct}%)</span></div>`;
+  }
+
+  el.innerHTML=`
+    <!-- Progress -->
+    <div class="grid grid-cols-4 gap-3 mb-6">
+      ${[['Total',s.total,'bg-gray-100 dark:bg-gray-700'],['Reviewed',s.reviewed,'bg-green-100 dark:bg-green-900/30'],
+         ['Unreviewed',s.unreviewed,'bg-amber-100 dark:bg-amber-900/30'],['Progress',s.pctReviewed+'%','bg-blue-100 dark:bg-blue-900/30']]
+        .map(([l,v,bg])=>`<div class="p-3 ${bg} rounded-lg text-center"><div class="text-lg font-bold">${v}</div><div class="text-xs text-gray-500">${l}</div></div>`).join('')}
+    </div>
+
+    <!-- High-level split -->
+    <h3 class="font-semibold text-sm mb-2">Retrieval-limited vs Post-retrieval Split</h3>
+    <div class="mb-4 text-sm">
+      ${pctBar(s.retrievalLimited,s.total,'bg-red-400')} <span class="text-xs text-gray-400 ml-2">Retrieval-limited</span>
+      ${pctBar(s.postRetrieval,s.total,'bg-orange-400')} <span class="text-xs text-gray-400 ml-2">Post-retrieval</span>
+      ${pctBar(s.complete,s.total,'bg-green-400')} <span class="text-xs text-gray-400 ml-2">Complete</span>
+      ${pctBar(s.unclearOther,s.total,'bg-gray-400')} <span class="text-xs text-gray-400 ml-2">Unclear / other</span>
+    </div>
+
+    <!-- Count tables -->
+    ${countTable(s.byHeuristicBucket,'By Heuristic Bucket')}
+    ${countTable(s.byHumanOutputLabel,'By Human Output Label')}
+    ${countTable(s.byRetrievalSupport,'By Retrieval Support')}
+    ${countTable(s.byPrimaryCause,'By Primary Failure Cause')}
+
+    <!-- Confusion matrices -->
+    ${confMatrix(s.confusionHeuristicVsCause,'Confusion: Heuristic Bucket × Human Primary Cause')}
+    <div class="overflow-x-auto">
+    ${(()=>{
+      const m=s.confusionEvalVsHuman;const rows=Object.keys(m);if(!rows.length)return'';
+      const allCols=[...new Set(rows.flatMap(r=>Object.keys(m[r])))];
+      let h=`<h3 class="font-semibold text-sm mb-2 mt-4">Confusion: Evaluator Label × Human Output Label</h3>
+        <table class="text-xs border-collapse mb-4">
+          <thead><tr class="bg-gray-100 dark:bg-gray-700">
+            <th class="px-2 py-1 border dark:border-gray-600 text-left">↓ Eval \\ Human Output →</th>`;
+      allCols.forEach(c=>{h+=`<th class="px-2 py-1 border dark:border-gray-600">${escapeHTML(c)}</th>`;});
+      h+='</tr></thead><tbody>';
+      rows.forEach(row=>{
+        h+=`<tr><td class="px-2 py-1 border dark:border-gray-600 font-medium">${escapeHTML(row)}</td>`;
+        allCols.forEach(col=>{
+          const v=(m[row]&&m[row][col])||0;
+          h+=`<td class="px-2 py-1 border dark:border-gray-600 text-center font-mono ${v>0?'bg-blue-50 dark:bg-blue-900/20':''}">${v||''}</td>`;
+        });
+        h+='</tr>';
+      });
+      return h+'</tbody></table>';
+    })()}
+    </div>
+  `;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// §12  TAXONOMY MODAL
+// ════════════════════════════════════════════════════════════════════════════
+
+function renderTaxonomyTable() {
+  const el=document.getElementById('taxonomy-table-container');
+  const groupBadge=g=>g==='retrieval_limited'
+    ?'<span class="badge bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">retrieval-limited</span>'
+    :g==='post_retrieval'
+    ?'<span class="badge bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">post-retrieval</span>'
+    :'<span class="badge bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">complete</span>';
+
+  let html=`<table class="w-full text-xs border-collapse">
+    <thead>
+      <tr class="bg-gray-100 dark:bg-gray-700 text-left">
+        <th class="px-2 py-2 border dark:border-gray-600 w-40">Error Type</th>
+        <th class="px-2 py-2 border dark:border-gray-600">Definition</th>
+        <th class="px-2 py-2 border dark:border-gray-600 text-right w-14">Count</th>
+        <th class="px-2 py-2 border dark:border-gray-600 text-right w-12">%</th>
+        <th class="px-2 py-2 border dark:border-gray-600 w-20">Group</th>
+      </tr>
+    </thead><tbody>`;
+  TAXONOMY_DATA.forEach(row=>{
+    html+=`<tr class="align-top border-b dark:border-gray-700">
+      <td class="px-2 py-2 border dark:border-gray-600 font-medium">${escapeHTML(row.error_type)}</td>
+      <td class="px-2 py-2 border dark:border-gray-600 text-gray-600 dark:text-gray-300">
+        <div>${escapeHTML(row.definition)}</div>
+        ${row.canonical_example_1?`<div class="mt-1 text-gray-400 italic">${escapeHTML(row.canonical_example_1)}</div>`:''}
+        ${row.canonical_example_2?`<div class="mt-0.5 text-gray-400 italic">${escapeHTML(row.canonical_example_2)}</div>`:''}
+        <div class="mt-1 text-gray-500">${escapeHTML(row.interpretation)}</div>
+      </td>
+      <td class="px-2 py-2 border dark:border-gray-600 text-right font-mono">${row.count}</td>
+      <td class="px-2 py-2 border dark:border-gray-600 text-right font-mono">${row.pct}%</td>
+      <td class="px-2 py-2 border dark:border-gray-600">${groupBadge(row.group)}</td>
+    </tr>`;
+  });
+  el.innerHTML=html+'</tbody></table>';
+}
+
+function renderShortcutsTable() {
+  const tbody=document.getElementById('shortcuts-table-body');
+  tbody.innerHTML=SHORTCUTS_LIST.map(([key,desc])=>`
+    <tr>
+      <td class="py-1.5 pr-4 font-mono text-gray-700 dark:text-gray-300 w-32"><span class="kbd text-xs">${escapeHTML(key)}</span></td>
+      <td class="py-1.5 text-gray-600 dark:text-gray-400">${escapeHTML(desc)}</td>
+    </tr>`).join('');
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// §13  MODALS
+// ════════════════════════════════════════════════════════════════════════════
+
+function openModal(id) { document.getElementById(id).hidden=false; }
+function closeModal(id) { document.getElementById(id).hidden=true; }
+function closeAllModals() {
+  ['modal-shortcuts','modal-taxonomy','modal-summary'].forEach(closeModal);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// §14  KEYBOARD SHORTCUTS
+// ════════════════════════════════════════════════════════════════════════════
+
+function setupKeyboardShortcuts() {
+  document.addEventListener('keydown', e=>{
+    const tag=(document.activeElement||{}).tagName||'';
+    const inInput=tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT';
+
+    // Always-active shortcuts
+    if(e.ctrlKey&&e.key==='s'){ e.preventDefault(); saveToLocalStorage(); return; }
+    if(e.ctrlKey&&e.key==='e'){ e.preventDefault(); exportJSON(); return; }
+    if(e.key==='Escape'){ closeAllModals(); return; }
+
+    if(inInput) return; // block remaining shortcuts when typing
+
+    switch(e.key){
+      case 'ArrowRight': case 'j': navigate(1); break;
+      case 'ArrowLeft':  case 'k': navigate(-1); break;
+      case 'u': goToNextUnreviewed(); break;
+      case 'd': goToNextDisagreement(); break;
+      case 'r': {
+        const cb=document.getElementById('reviewed-checkbox');
+        cb.checked=!cb.checked; onAnnotationChange(); break;
+      }
+      case 'f': {
+        const cb=document.getElementById('flagged-checkbox');
+        cb.checked=!cb.checked; onAnnotationChange(); break;
+      }
+      case 'n': document.getElementById('notes-textarea').focus(); break;
+      case 's': saveToLocalStorage(); break;
+      case '?': openModal('modal-shortcuts'); break;
+      case '1': case '2': case '3': case '4': case '5': case '6': {
+        const idx=parseInt(e.key,10)-1;
+        const opt=OUTPUT_LABELS[idx]; if(!opt) break;
+        const radio=document.querySelector(`input[name="oc"][value="${opt.value}"]`);
+        if(radio){ radio.checked=true; onAnnotationChange(); }
+        break;
+      }
+    }
+  });
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// §15  INIT
+// ════════════════════════════════════════════════════════════════════════════
+
+function init() {
+  loadFromLocalStorage();
+  renderShortcutsTable();
+  renderTaxonomyTable();
+  renderRubricPanel();
+  wireEventListeners();
+  setupKeyboardShortcuts();
+  attemptAutoLoad();
+}
+
+function renderRubricPanel() {
+  document.getElementById('rubric-content').innerHTML=RUBRIC_HTML;
+}
+
+function wireEventListeners() {
+  // Drop zone
+  const dropZone=document.getElementById('drop-zone');
+  dropZone.addEventListener('click',()=>document.getElementById('file-input').click());
+  dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('border-blue-500','bg-blue-50');});
+  dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('border-blue-500','bg-blue-50'));
+  dropZone.addEventListener('drop',e=>{
+    e.preventDefault();dropZone.classList.remove('border-blue-500','bg-blue-50');
+    handleFiles(e.dataTransfer.files);
+  });
+  document.getElementById('file-input').addEventListener('change',e=>handleFiles(e.target.files));
+  document.getElementById('btn-pick-files').addEventListener('click',e=>{e.stopPropagation();document.getElementById('file-input').click();});
+
+  // Navigation
+  document.getElementById('btn-prev').addEventListener('click',()=>navigate(-1));
+  document.getElementById('btn-next').addEventListener('click',()=>navigate(1));
+  document.getElementById('btn-jump').addEventListener('click',()=>jumpToId(document.getElementById('jump-input').value));
+  document.getElementById('jump-input').addEventListener('keydown',e=>{if(e.key==='Enter')jumpToId(e.target.value);});
+  document.getElementById('btn-next-unreviewed').addEventListener('click',goToNextUnreviewed);
+  document.getElementById('btn-next-disagreement').addEventListener('click',goToNextDisagreement);
+
+  // Save/export/import
+  document.getElementById('btn-save').addEventListener('click',saveToLocalStorage);
+  document.getElementById('btn-export-json').addEventListener('click',exportJSON);
+  document.getElementById('btn-export-csv').addEventListener('click',exportCSV);
+  document.getElementById('btn-import').addEventListener('click',()=>document.getElementById('import-input').click());
+  document.getElementById('import-input').addEventListener('change',e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      const fmt=f.name.endsWith('.csv')?'csv':'json';
+      try{ importAnnotations(ev.target.result,fmt); }
+      catch(err){ alert('Import error: '+err.message); }
+    };
+    reader.readAsText(f);
+    e.target.value='';
+  });
+
+  // Search
+  document.getElementById('search-input').addEventListener('input',e=>{
+    state.searchText=e.target.value;
+    const sc=document.getElementById('search-count');
+    scheduleFilterUpdate();
+    if(state.searchText){
+      sc.hidden=false;
+      sc.textContent=state.filteredExamples.length+' results';
+    } else { sc.hidden=true; }
+  });
+
+  // Filters
+  document.querySelectorAll('input[name="filter-review"]').forEach(r=>{
+    r.addEventListener('change',e=>{ state.filters.reviewStatus=e.target.value; scheduleFilterUpdate(); updateFilterBadge(); });
+  });
+  document.getElementById('filter-disagreements').addEventListener('change',e=>{
+    state.filters.onlyDisagreements=e.target.checked; scheduleFilterUpdate(); updateFilterBadge();
+  });
+
+  // Passages
+  document.getElementById('btn-expand-all').addEventListener('click',()=>{
+    document.querySelectorAll('.passage-card .passage-body').forEach(b=>{b.hidden=false;});
+    document.querySelectorAll('.passage-card .toggle-icon').forEach(i=>{i.textContent='▲';});
+  });
+  document.getElementById('btn-collapse-all').addEventListener('click',()=>{
+    document.querySelectorAll('.passage-card .passage-body').forEach(b=>{b.hidden=true;});
+    document.querySelectorAll('.passage-card .toggle-icon').forEach(i=>{i.textContent='▼';});
+  });
+
+  // Prompt toggle
+  document.getElementById('btn-toggle-prompt').addEventListener('click',()=>{
+    const body=document.getElementById('prompt-body');
+    body.hidden=!body.hidden;
+    document.getElementById('btn-toggle-prompt').textContent=(body.hidden?'▶':'▼')+' Show Prompt';
+  });
+
+  // Annotation changes
+  document.getElementById('notes-textarea').addEventListener('input',()=>{
+    clearTimeout(_saveTimer);_saveTimer=setTimeout(()=>{onAnnotationChange();},300);
+  });
+  document.getElementById('reviewed-checkbox').addEventListener('change',onAnnotationChange);
+  document.getElementById('flagged-checkbox').addEventListener('change',onAnnotationChange);
+
+  // Custom tags
+  document.getElementById('btn-add-custom-tag').addEventListener('click',addCustomTag);
+  document.getElementById('custom-tag-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addCustomTag();}});
+
+  // Rubric toggle
+  document.getElementById('btn-toggle-rubric').addEventListener('click',()=>{
+    const c=document.getElementById('rubric-content');
+    c.hidden=!c.hidden;
+    document.getElementById('btn-toggle-rubric').textContent=(c.hidden?'▶':'▼')+' Annotation Rubric';
+  });
+
+  // Header buttons
+  document.getElementById('btn-dark-mode').addEventListener('click',()=>{
+    document.documentElement.classList.toggle('dark');
+  });
+  document.getElementById('btn-shortcuts').addEventListener('click',()=>openModal('modal-shortcuts'));
+  document.getElementById('btn-taxonomy').addEventListener('click',()=>openModal('modal-taxonomy'));
+  document.getElementById('btn-summary').addEventListener('click',()=>{ renderSummary(); openModal('modal-summary'); });
+}
+
+function updateFilterBadge() {
+  let n=0;
+  if(state.filters.heuristicBuckets.length)  n+=state.filters.heuristicBuckets.length;
+  if(state.filters.evaluatorLabels.length)    n+=state.filters.evaluatorLabels.length;
+  if(state.filters.reviewStatus!=='all')      n++;
+  if(state.filters.onlyDisagreements)         n++;
+  const badge=document.getElementById('filter-active-badge');
+  badge.textContent=n+' active'; badge.hidden=n===0;
+}
+
+// Start
+init();
+</script>
+</body>
+</html>

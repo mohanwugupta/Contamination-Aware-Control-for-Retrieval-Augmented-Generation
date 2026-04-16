@@ -1,11 +1,13 @@
-# PRD 1 — Implementation TODO & Scratchpad
+# PRD 1 & PRD 2 — Implementation TODO & Scratchpad
 
 > Auto-maintained progress tracker for TDD implementation.
-> Last updated: 2026-04-01
+> Last updated: 2026-04-16
 
 ---
 
 ## Overall Progress
+
+### PRD 1 — Baseline RAG Systems
 
 | Phase | Status | Tests |
 |-------|--------|-------|
@@ -34,11 +36,31 @@
 
 **🎉 PRD 1 COMPLETE — All required and preferred exit criteria satisfied.**
 
+### PRD 2 — AmbigDocs Error Review Dashboard
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| 1. Repo exploration & schema audit | ✅ DONE | All 6 human_checks/ files read |
+| 2. TDD test suite | ✅ DONE | 73/73 GREEN (`tests/unit/test_dashboard_core.js`) |
+| 3. `human_checks/index.html` — core dashboard | ✅ DONE | Single-file, Tailwind CDN, vanilla JS |
+| 4. Passage text enrichment | ✅ DONE | Drop `retrievals.jsonl` to populate text |
+
+**Dashboard features shipped:**
+- Auto-loads `ambigdocs_stratified_error_samples.jsonl` on open
+- 3-column layout: nav/filters · example viewer · annotation panel
+- Full annotation panel: output category (kbd 1–6), retrieval support, primary cause, secondary tags, notes, reviewed/flagged
+- Passage text enrichment: drop any run's `retrievals.jsonl` to show full passage content with gold/pred highlighting
+- Disagreement banner when human ≠ heuristic classification
+- LocalStorage persistence (`ambigdocs_review_v1`), export to JSON/CSV, import annotations
+- Summary modal with retrieval-limited vs post-retrieval split + confusion matrices
+- Taxonomy and rubric inline modals
+- Full keyboard navigation (j/k/u/d/r/f/n/1–6/Ctrl+S/Ctrl+E/?)
+
 ---
 
-## Current Phase: COMPLETE ✅
+## Current Phase: PRD 2 Dashboard ✅
 
-All 20 phases delivered across 3 sessions.
+All PRD 2 phases delivered. Next: human error review → PRD 3 (contamination-aware controller).
 
 ---
 

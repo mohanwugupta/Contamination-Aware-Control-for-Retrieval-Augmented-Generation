@@ -1,0 +1,8 @@
+rubric_label,count,pct
+retrieval missing support,1065,29.5
+"support present, omitted valid answers",825,22.9
+complete,545,15.1
+"support present, wrong selection/shape",534,14.8
+single-answer collapse,478,13.2
+"support present, unsupported generation",137,3.8
+entity merge,26,0.7
