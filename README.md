@@ -287,13 +287,17 @@ The plateau at ~15% complete recall under all current baselines exposes two dist
 
 To start the review dashboard:
 ```bash
-# Serve locally (required for auto-load of bundled JSONL)
-cd human_checks
+# Serve from the repo root so relative paths resolve automatically
 python -m http.server 8080
-# Open http://localhost:8080
+# Open http://localhost:8080/human_checks/
 ```
 
-Then optionally drop `outputs/hybrid_rerank/retrievals.jsonl` onto the dashboard to load full passage text for retrieval support verification.
+The dashboard auto-loads three files on open — no drag-and-drop needed:
+1. `human_checks/ambigdocs_stratified_error_samples.jsonl` — the 20 stratified error examples
+2. `outputs/hybrid_rerank/retrievals.jsonl` — full passage text for each example
+3. `outputs/hybrid_rerank/prompts.jsonl` — prompts shown in the collapsible prompt panel
+
+If the server isn't available (e.g. opening as a local file), you can still drop files manually onto the left sidebar.
 
 ---
 

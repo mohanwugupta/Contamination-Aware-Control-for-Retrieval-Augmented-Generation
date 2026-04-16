@@ -394,6 +394,14 @@
 
 const LS_KEY = 'ambigdocs_review_v1';
 
+// Files fetched automatically on load (relative to human_checks/ when served).
+// All fetches are silent-fail so the dashboard still works on file:// or with missing outputs.
+const AUTO_FETCH_MANIFEST = [
+  { path:'./ambigdocs_stratified_error_samples.jsonl', type:'stratified',  label:'examples'  },
+  { path:'../outputs/hybrid_rerank/retrievals.jsonl',  type:'retrievals', label:'passages'  },
+  { path:'../outputs/hybrid_rerank/prompts.jsonl',     type:'prompts',    label:'prompts'   },
+];
+
 const OUTPUT_LABELS = [
   { value:'complete',                label:'Complete',                shortcut:'1' },
   { value:'single_answer_collapse',  label:'Single-answer collapse',  shortcut:'2' },
@@ -992,6 +1000,19 @@ function enrichExamplesWithRetrievals(records) {
   }
 }
 
+function enrichExamplesWithPrompts(records) {
+  if(!state.allExamples.length) return;
+  const promptMap={};
+  records.forEach(r=>{ if(r.example_id&&r.prompt_text) promptMap[r.example_id]=r.prompt_text; });
+  const matched=Object.keys(promptMap).length;
+  if(!matched) return;
+  state.allExamples=state.allExamples.map(e=>{
+    const t=promptMap[e.example_id]; return t?{...e,prompt_text:t}:e;
+  });
+  applyFilterState();
+  renderAll();
+}
+
 function tryNormalizeRawRun() {
   if(!state.rawBuffers.inputs) return;
   const examples=normalizeRawRunRecords(state.rawBuffers);
@@ -1017,17 +1038,32 @@ function loadExamples(examples, source) {
 
 async function attemptAutoLoad() {
   const statusEl=document.getElementById('auto-load-status');
+
+  // ── Step 1: load primary examples ──────────────────────────────────────
+  const primary=AUTO_FETCH_MANIFEST.find(m=>m.type==='stratified');
   try {
-    const resp=await fetch('./ambigdocs_stratified_error_samples.jsonl');
+    statusEl.textContent='Loading examples…';
+    const resp=await fetch(primary.path);
     if(!resp.ok) throw new Error('not found');
-    const text=await resp.text();
-    const records=parseJSONL(text);
-    const examples=records.map(normalizeStratifiedRecord);
-    loadExamples(examples,'bundled stratified JSONL');
+    const records=parseJSONL(await resp.text());
+    loadExamples(records.map(normalizeStratifiedRecord),'auto-loaded');
     statusEl.hidden=true;
   } catch(_) {
     statusEl.textContent='No bundled data found — drop files to load.';
+    return; // companions are only useful once examples are loaded
   }
+
+  // ── Step 2: fetch all companion files in parallel (silent-fail) ─────────
+  const companions=AUTO_FETCH_MANIFEST.filter(m=>m.type!=='stratified');
+  await Promise.allSettled(companions.map(async ({path,type,label})=>{
+    try {
+      const resp=await fetch(path);
+      if(!resp.ok) return;
+      const records=parseJSONL(await resp.text());
+      if(type==='retrievals') enrichExamplesWithRetrievals(records);
+      else if(type==='prompts') enrichExamplesWithPrompts(records);
+    } catch(_){/* not served or path doesn't exist — ignore */}
+  }));
 }
 
 // ════════════════════════════════════════════════════════════════════════════
