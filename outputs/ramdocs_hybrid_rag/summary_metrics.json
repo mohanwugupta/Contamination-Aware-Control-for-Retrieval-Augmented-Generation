@@ -3,7 +3,7 @@
   "normalized_match_rate": 0.0,
   "exact_match_rate": 0.0,
   "multi_answer_score": 0.6840000000000006,
-  "baseline_name": "hybrid_norerank_full",
+  "baseline_name": "ramdocs_hybrid_norerank_full",
   "dataset": "ramdocs",
   "split": "test"
 }

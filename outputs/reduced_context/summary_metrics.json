@@ -2,8 +2,8 @@
   "total_examples": 3610,
   "normalized_match_rate": 0.0,
   "exact_match_rate": 0.0,
-  "multi_answer_score": 0.2808731257969499,
-  "baseline_name": "hybrid_rerank_reduced",
+  "multi_answer_score": 0.35313272215626845,
+  "baseline_name": "ambigdocs_hybrid_rerank_reduced",
   "dataset": "ambigdocs",
   "split": "validation"
 }

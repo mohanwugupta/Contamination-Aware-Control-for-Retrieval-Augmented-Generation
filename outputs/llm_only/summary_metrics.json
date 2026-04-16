@@ -1,8 +1,8 @@
 {
   "total_examples": 3610,
-  "normalized_match_rate": 0.3734072022160665,
-  "exact_match_rate": 0.046814404432132965,
-  "baseline_name": "llm_only",
+  "normalized_match_rate": 0.3717451523545706,
+  "exact_match_rate": 0.04709141274238227,
+  "baseline_name": "nq_open_llm_only",
   "dataset": "nq_open",
   "split": "validation"
 }

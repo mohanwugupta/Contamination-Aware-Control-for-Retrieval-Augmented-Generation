@@ -1,8 +1,8 @@
 {
   "total_examples": 4992,
-  "normalized_match_rate": 0.0038060897435897435,
+  "normalized_match_rate": 0.003605769230769231,
   "exact_match_rate": 0.0,
-  "baseline_name": "llm_only",
+  "baseline_name": "faitheval_llm_only",
   "dataset": "faitheval",
   "split": "test"
 }

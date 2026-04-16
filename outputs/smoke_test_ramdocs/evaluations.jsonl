@@ -1,5 +1,5 @@
-{"example_id":"ramdocs_0","dataset":"ramdocs","baseline_name":"hybrid_rerank_full","metrics":{"exact_match":null,"normalized_match":null,"multi_answer_score":0.0,"answer_category":"no_answer"}}
-{"example_id":"ramdocs_1","dataset":"ramdocs","baseline_name":"hybrid_rerank_full","metrics":{"exact_match":null,"normalized_match":null,"multi_answer_score":1.0,"answer_category":"complete"}}
-{"example_id":"ramdocs_2","dataset":"ramdocs","baseline_name":"hybrid_rerank_full","metrics":{"exact_match":null,"normalized_match":null,"multi_answer_score":1.0,"answer_category":"complete"}}
-{"example_id":"ramdocs_3","dataset":"ramdocs","baseline_name":"hybrid_rerank_full","metrics":{"exact_match":null,"normalized_match":null,"multi_answer_score":0.0,"answer_category":"no_answer"}}
-{"example_id":"ramdocs_4","dataset":"ramdocs","baseline_name":"hybrid_rerank_full","metrics":{"exact_match":null,"normalized_match":null,"multi_answer_score":1.0,"answer_category":"complete"}}
+{"example_id":"ramdocs_0","dataset":"ramdocs","baseline_name":"ramdocs_hybrid_rerank_full","metrics":{"exact_match":null,"normalized_match":null,"multi_answer_score":1.0,"answer_category":"complete"}}
+{"example_id":"ramdocs_1","dataset":"ramdocs","baseline_name":"ramdocs_hybrid_rerank_full","metrics":{"exact_match":null,"normalized_match":null,"multi_answer_score":1.0,"answer_category":"complete"}}
+{"example_id":"ramdocs_2","dataset":"ramdocs","baseline_name":"ramdocs_hybrid_rerank_full","metrics":{"exact_match":null,"normalized_match":null,"multi_answer_score":1.0,"answer_category":"complete"}}
+{"example_id":"ramdocs_3","dataset":"ramdocs","baseline_name":"ramdocs_hybrid_rerank_full","metrics":{"exact_match":null,"normalized_match":null,"multi_answer_score":1.0,"answer_category":"complete"}}
+{"example_id":"ramdocs_4","dataset":"ramdocs","baseline_name":"ramdocs_hybrid_rerank_full","metrics":{"exact_match":null,"normalized_match":null,"multi_answer_score":1.0,"answer_category":"complete"}}

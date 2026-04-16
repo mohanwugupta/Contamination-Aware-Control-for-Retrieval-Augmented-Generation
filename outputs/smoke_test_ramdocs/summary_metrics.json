@@ -2,7 +2,8 @@
   "total_examples": 5,
   "normalized_match_rate": 0.0,
   "exact_match_rate": 0.0,
-  "baseline_name": "hybrid_rerank_full",
+  "multi_answer_score": 1.0,
+  "baseline_name": "ramdocs_hybrid_rerank_full",
   "dataset": "ramdocs",
   "split": "test"
 }
