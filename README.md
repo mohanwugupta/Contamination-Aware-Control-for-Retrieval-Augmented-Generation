@@ -6,21 +6,6 @@ A research project investigating a specific and underappreciated failure mode in
 
 ---
 
-## Current Status
-
-> **PRD 1 (baseline harness) — complete. PRD 2 (error review dashboard) — complete. PRDs 3–4 (controller + evaluation) — not started.**
-
-| Stage | What it is | Status |
-|-------|-----------|--------|
-| **PRD 1** — Baseline harness | Five standard RAG variants, four benchmark datasets, full artifact logging, 210+ tests | ✅ Done |
-| **PRD 2** — Error review dashboard | Browser-based annotation tool for stratified AmbigDocs errors; human-verified failure taxonomy | ✅ Done |
-| **PRD 3** — Contamination controller | Contamination scoring, minimal-consistent-subset selection, abstention routing | 🔲 Not started |
-| **PRD 4** — Evaluation and paper artifacts | Ablations, metric suite, submission-quality tables | 🔲 Not started |
-
-The baselines are run on real hardware (Princeton HPC, Qwen2.5-32B) and produce real numbers. The controller they are designed to precede does not exist yet.
-
----
-
 ## The Problem
 
 RAG systems fail in two qualitatively distinct ways that current pipelines do not distinguish:
@@ -106,6 +91,21 @@ A fourth dimension — **retrieval instability** — captures cases where the an
 - Contamination scoring, subset selection, abstention routing — all planned.
 - The controlled benchmark slice with matched clean / contaminated / missing-evidence conditions (PRD 2 controlled benchmark) — planned.
 - Formal evaluation campaign and paper artifacts (PRD 4) — planned.
+
+---
+
+## Current Status
+
+> **PRD 1 (baseline harness) — complete. PRD 2 (error review dashboard) — complete. PRDs 3–4 (controller + evaluation) — not started.**
+
+| Stage | What it is | Status |
+|-------|-----------|--------|
+| **PRD 1** — Baseline harness | Five standard RAG variants, four benchmark datasets, full artifact logging, 210+ tests | ✅ Done |
+| **PRD 2** — Error review dashboard | Browser-based annotation tool for stratified AmbigDocs errors; human-verified failure taxonomy | ✅ Done |
+| **PRD 3** — Contamination controller | Contamination scoring, minimal-consistent-subset selection, abstention routing | 🔲 Not started |
+| **PRD 4** — Evaluation and paper artifacts | Ablations, metric suite, submission-quality tables | 🔲 Not started |
+
+The baselines are run on real hardware (Princeton HPC, Qwen2.5-32B) and produce real numbers. The controller they are designed to precede does not exist yet.
 
 ---
 
