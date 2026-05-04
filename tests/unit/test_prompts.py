@@ -8,7 +8,6 @@ Prompt families:
 All prompts must be deterministic and not contain hidden heuristics.
 """
 
-import pytest
 
 
 class TestPromptTemplates:

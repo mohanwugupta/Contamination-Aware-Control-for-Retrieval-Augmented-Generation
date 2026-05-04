@@ -10,7 +10,7 @@ import os
 from sentence_transformers import CrossEncoder
 
 from rag_baseline.reranking.base import BaseReranker
-from rag_baseline.schemas.rerank import RerankOutput, RerankedPassage
+from rag_baseline.schemas.rerank import RerankedPassage, RerankOutput
 from rag_baseline.schemas.retrieval import RetrievedPassage
 
 

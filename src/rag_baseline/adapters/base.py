@@ -66,9 +66,7 @@ class BaseAdapter(ABC):
         ...
 
     @abstractmethod
-    def load_from_dicts(
-        self, rows: list[dict], split: str = "validation"
-    ) -> list[InputExample]:
+    def load_from_dicts(self, rows: list[dict], split: str = "validation") -> list[InputExample]:
         """Load from raw dicts (for testing without HuggingFace download).
 
         Args:

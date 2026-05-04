@@ -5,13 +5,7 @@ PRD 1 requires:
 - Config-driven run script
 """
 
-import json
-import subprocess
-import sys
 from pathlib import Path
-
-import pytest
-
 
 CONFIGS_DIR = Path(__file__).resolve().parents[2] / "configs" / "baselines"
 
@@ -66,8 +60,7 @@ class TestCLIEntrypoint:
 
         # Create a minimal config for dry-run
         config_path = tmp_path / "test_config.yaml"
-        config_path.write_text(
-            """
+        config_path.write_text("""
 dataset: nq_open
 split: validation
 retriever_type: none
@@ -80,8 +73,7 @@ context_strategy: none
 answer_mode: single
 output_dir: {output_dir}
 random_seed: 42
-""".format(output_dir=str(tmp_path / "output"))
-        )
+""".format(output_dir=str(tmp_path / "output")))
 
         # Dry run should succeed without errors
         result = main(["--config", str(config_path), "--dry-run"])

@@ -24,12 +24,15 @@ def create_retriever(
     """
     if retriever_type == "dense":
         from rag_baseline.retrieval.dense import DenseRetriever
+
         return DenseRetriever(model_name=dense_model)
     elif retriever_type == "sparse":
         from rag_baseline.retrieval.sparse import SparseRetriever
+
         return SparseRetriever()
     elif retriever_type == "hybrid":
         from rag_baseline.retrieval.hybrid import HybridRetriever
+
         return HybridRetriever(dense_model_name=dense_model)
     elif retriever_type == "none":
         return None

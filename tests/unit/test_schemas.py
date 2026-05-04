@@ -7,16 +7,16 @@ They should FAIL until the schemas are implemented (red → green).
 import pytest
 from pydantic import ValidationError
 
-
 # ---------------------------------------------------------------------------
 # §10.1 — Input schema
 # ---------------------------------------------------------------------------
+
 
 class TestInputExample:
     """Tests for the normalized input example schema (PRD 1 §10.1)."""
 
     def test_single_answer_example_creates(self):
-        from rag_baseline.schemas.input import InputExample, GoldAnswer
+        from rag_baseline.schemas.input import GoldAnswer, InputExample
 
         gold = GoldAnswer(
             single_answer="1963",
@@ -34,7 +34,7 @@ class TestInputExample:
         assert ex.gold.single_answer == "1963"
 
     def test_multi_answer_example_creates(self):
-        from rag_baseline.schemas.input import InputExample, GoldAnswer
+        from rag_baseline.schemas.input import GoldAnswer, InputExample
 
         gold = GoldAnswer(
             single_answer=None,
@@ -52,7 +52,7 @@ class TestInputExample:
         assert ex.gold.single_answer is None
 
     def test_unknown_allowed_example(self):
-        from rag_baseline.schemas.input import InputExample, GoldAnswer
+        from rag_baseline.schemas.input import GoldAnswer, InputExample
 
         gold = GoldAnswer(
             single_answer=None,
@@ -69,7 +69,7 @@ class TestInputExample:
         assert ex.gold.unknown_allowed is True
 
     def test_task_type_must_be_valid(self):
-        from rag_baseline.schemas.input import InputExample, GoldAnswer
+        from rag_baseline.schemas.input import GoldAnswer, InputExample
 
         gold = GoldAnswer(single_answer="x", multi_answers=None, unknown_allowed=False)
         with pytest.raises(ValidationError):
@@ -82,7 +82,7 @@ class TestInputExample:
             )
 
     def test_example_id_required(self):
-        from rag_baseline.schemas.input import InputExample, GoldAnswer
+        from rag_baseline.schemas.input import GoldAnswer, InputExample
 
         gold = GoldAnswer(single_answer="x", multi_answers=None, unknown_allowed=False)
         with pytest.raises(ValidationError):
@@ -96,7 +96,7 @@ class TestInputExample:
 
     def test_metadata_requires_dataset_field(self):
         """Metadata must contain at least 'dataset'."""
-        from rag_baseline.schemas.input import InputExample, GoldAnswer
+        from rag_baseline.schemas.input import GoldAnswer, InputExample
 
         gold = GoldAnswer(single_answer="x", multi_answers=None, unknown_allowed=False)
         with pytest.raises(ValidationError):
@@ -110,7 +110,7 @@ class TestInputExample:
 
     def test_round_trip_json(self):
         """Schema must serialize to JSON and back without loss."""
-        from rag_baseline.schemas.input import InputExample, GoldAnswer
+        from rag_baseline.schemas.input import GoldAnswer, InputExample
 
         gold = GoldAnswer(single_answer="1963", multi_answers=None, unknown_allowed=False)
         ex = InputExample(
@@ -128,6 +128,7 @@ class TestInputExample:
 # ---------------------------------------------------------------------------
 # §10.2 — Retrieval output schema
 # ---------------------------------------------------------------------------
+
 
 class TestRetrievalOutput:
     """Tests for retrieval output schema (PRD 1 §10.2)."""
@@ -181,8 +182,11 @@ class TestRetrievalOutput:
         from rag_baseline.schemas.retrieval import RetrievalOutput, RetrievedPassage
 
         passage = RetrievedPassage(
-            passage_id="p1", text="text", source="doc_1",
-            retrieval_score=5.0, rank=1,
+            passage_id="p1",
+            text="text",
+            source="doc_1",
+            retrieval_score=5.0,
+            rank=1,
         )
         output = RetrievalOutput(example_id="ex_rt", retrieved_passages=[passage])
         json_str = output.model_dump_json()
@@ -194,11 +198,12 @@ class TestRetrievalOutput:
 # §10.3 — Reranker output schema
 # ---------------------------------------------------------------------------
 
+
 class TestRerankOutput:
     """Tests for reranker output schema (PRD 1 §10.3)."""
 
     def test_rerank_output_creates(self):
-        from rag_baseline.schemas.rerank import RerankOutput, RerankedPassage
+        from rag_baseline.schemas.rerank import RerankedPassage, RerankOutput
 
         passage = RerankedPassage(
             passage_id="p3",
@@ -218,18 +223,26 @@ class TestRerankOutput:
         from rag_baseline.schemas.rerank import RerankedPassage
 
         p = RerankedPassage(
-            passage_id="p1", text="t", source="s",
-            retrieval_score=10.0, rerank_score=0.9, rank_after_rerank=1,
+            passage_id="p1",
+            text="t",
+            source="s",
+            retrieval_score=10.0,
+            rerank_score=0.9,
+            rank_after_rerank=1,
         )
         assert p.retrieval_score == 10.0
         assert p.rerank_score == 0.9
 
     def test_round_trip_json(self):
-        from rag_baseline.schemas.rerank import RerankOutput, RerankedPassage
+        from rag_baseline.schemas.rerank import RerankedPassage, RerankOutput
 
         p = RerankedPassage(
-            passage_id="p1", text="t", source="s",
-            retrieval_score=10.0, rerank_score=0.9, rank_after_rerank=1,
+            passage_id="p1",
+            text="t",
+            source="s",
+            retrieval_score=10.0,
+            rerank_score=0.9,
+            rank_after_rerank=1,
         )
         output = RerankOutput(example_id="ex_rt", reranked_passages=[p])
         json_str = output.model_dump_json()
@@ -241,11 +254,12 @@ class TestRerankOutput:
 # §10.4 — Prompt record schema
 # ---------------------------------------------------------------------------
 
+
 class TestPromptRecord:
     """Tests for prompt record schema (PRD 1 §10.4)."""
 
     def test_prompt_record_creates(self):
-        from rag_baseline.schemas.prompt import PromptRecord, PromptMetadata
+        from rag_baseline.schemas.prompt import PromptMetadata, PromptRecord
 
         meta = PromptMetadata(
             model_name="Qwen/Qwen2.5-32B-Instruct",
@@ -264,10 +278,12 @@ class TestPromptRecord:
         assert len(record.used_passage_ids) == 4
 
     def test_answer_mode_must_be_valid(self):
-        from rag_baseline.schemas.prompt import PromptRecord, PromptMetadata
+        from rag_baseline.schemas.prompt import PromptMetadata, PromptRecord
 
         meta = PromptMetadata(
-            model_name="m", temperature=0.0, max_context_passages=4,
+            model_name="m",
+            temperature=0.0,
+            max_context_passages=4,
         )
         with pytest.raises(ValidationError):
             PromptRecord(
@@ -280,12 +296,16 @@ class TestPromptRecord:
             )
 
     def test_round_trip_json(self):
-        from rag_baseline.schemas.prompt import PromptRecord, PromptMetadata
+        from rag_baseline.schemas.prompt import PromptMetadata, PromptRecord
 
         meta = PromptMetadata(model_name="m", temperature=0.0, max_context_passages=4)
         record = PromptRecord(
-            example_id="ex_rt", baseline_name="b", answer_mode="single",
-            used_passage_ids=["p1"], prompt_text="text", prompt_metadata=meta,
+            example_id="ex_rt",
+            baseline_name="b",
+            answer_mode="single",
+            used_passage_ids=["p1"],
+            prompt_text="text",
+            prompt_metadata=meta,
         )
         json_str = record.model_dump_json()
         record2 = PromptRecord.model_validate_json(json_str)
@@ -295,6 +315,7 @@ class TestPromptRecord:
 # ---------------------------------------------------------------------------
 # §10.5 — Generation output schema
 # ---------------------------------------------------------------------------
+
 
 class TestGenerationOutput:
     """Tests for generation output schema (PRD 1 §10.5)."""
@@ -362,7 +383,9 @@ class TestGenerationOutput:
 
         parsed = ParsedOutput(single_answer="x", multi_answers=None, unknown=False)
         gen = GenerationOutput(
-            example_id="ex_rt", raw_model_output="raw", parsed_output=parsed,
+            example_id="ex_rt",
+            raw_model_output="raw",
+            parsed_output=parsed,
         )
         json_str = gen.model_dump_json()
         gen2 = GenerationOutput.model_validate_json(json_str)
@@ -372,6 +395,7 @@ class TestGenerationOutput:
 # ---------------------------------------------------------------------------
 # §10.6 — Evaluation output schema
 # ---------------------------------------------------------------------------
+
 
 class TestEvaluationOutput:
     """Tests for evaluation output schema (PRD 1 §10.6)."""
@@ -415,8 +439,10 @@ class TestEvaluationOutput:
         from rag_baseline.schemas.evaluation import EvaluationOutput, Metrics
 
         metrics = Metrics(
-            exact_match=True, normalized_match=True,
-            multi_answer_score=None, answer_category=None,
+            exact_match=True,
+            normalized_match=True,
+            multi_answer_score=None,
+            answer_category=None,
         )
         with pytest.raises(ValidationError):
             EvaluationOutput(
@@ -430,12 +456,16 @@ class TestEvaluationOutput:
         from rag_baseline.schemas.evaluation import EvaluationOutput, Metrics
 
         metrics = Metrics(
-            exact_match=True, normalized_match=True,
-            multi_answer_score=None, answer_category=None,
+            exact_match=True,
+            normalized_match=True,
+            multi_answer_score=None,
+            answer_category=None,
         )
         ev = EvaluationOutput(
-            example_id="ex_rt", dataset="nq_open",
-            baseline_name="b", metrics=metrics,
+            example_id="ex_rt",
+            dataset="nq_open",
+            baseline_name="b",
+            metrics=metrics,
         )
         json_str = ev.model_dump_json()
         ev2 = EvaluationOutput.model_validate_json(json_str)

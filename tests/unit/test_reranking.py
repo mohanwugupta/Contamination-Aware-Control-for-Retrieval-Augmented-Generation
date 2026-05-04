@@ -11,11 +11,13 @@ class TestRerankerInterface:
 
     def test_base_reranker_is_abstract(self):
         from rag_baseline.reranking.base import BaseReranker
+
         with pytest.raises(TypeError):
             BaseReranker()  # type: ignore[abstract]
 
     def test_base_reranker_has_rerank_method(self):
         from rag_baseline.reranking.base import BaseReranker
+
         assert hasattr(BaseReranker, "rerank")
 
 
@@ -25,16 +27,23 @@ class TestCrossEncoderReranker:
     @pytest.fixture
     def sample_passages(self):
         from rag_baseline.schemas.retrieval import RetrievedPassage
+
         return [
             RetrievedPassage(
-                passage_id=f"p{i}", text=text, source=f"doc_{i}",
-                retrieval_score=10.0 - i, rank=i,
+                passage_id=f"p{i}",
+                text=text,
+                source=f"doc_{i}",
+                retrieval_score=10.0 - i,
+                rank=i,
             )
-            for i, text in enumerate([
-                "Michael Jordan was born in 1963 in Brooklyn.",
-                "The capital of France is Paris.",
-                "Michael Jordan is a retired basketball player.",
-            ], start=1)
+            for i, text in enumerate(
+                [
+                    "Michael Jordan was born in 1963 in Brooklyn.",
+                    "The capital of France is Paris.",
+                    "Michael Jordan is a retired basketball player.",
+                ],
+                start=1,
+            )
         ]
 
     @pytest.mark.slow

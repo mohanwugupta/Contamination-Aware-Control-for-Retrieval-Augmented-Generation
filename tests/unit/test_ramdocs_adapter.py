@@ -11,8 +11,6 @@ Fields:
     wrong_answers: list[str]
 """
 
-import pytest
-
 
 # ---------------------------------------------------------------------------
 # Sample data matching HuggingFace RAMDocs schema

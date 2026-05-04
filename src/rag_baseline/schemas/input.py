@@ -11,7 +11,6 @@ from typing import Literal
 
 from pydantic import BaseModel, field_validator
 
-
 TaskType = Literal["single_answer_qa", "multi_answer_qa"]
 
 

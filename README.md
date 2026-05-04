@@ -1,233 +1,286 @@
-# Baseline RAG Systems for Contamination-Aware Evaluation
+﻿# Contamination-Aware Control for Retrieval-Augmented Generation
 
-**PRD 1 — Baseline RAG Systems and Benchmark Harness**
+> **Research project** — Python 3.11 · Qwen2.5-32B · Princeton HPC
 
-A reproducible baseline RAG evaluation stack that runs multiple standard baseline systems across multiple benchmark types, saving all intermediate artifacts for downstream contamination analysis.
-
----
-
-## Cluster Setup (Princeton HPC / SLURM)
-
-Compute nodes have no internet. Before submitting any SLURM job you must
-pre-cache models and datasets on a **login node**:
-
-```bash
-# Step 1 — Download retrieval + reranking models (fixes offline bge error)
-bash slurm/precache_models.sh
-
-# Step 2 — Download benchmark datasets
-bash slurm/precache_datasets.sh
-
-# Step 3 — Submit jobs
-sbatch slurm/run_baselines.sh
-```
-
-📖 Full cluster guide (env setup, Qwen download, smoke-check, troubleshooting):
-[docs/cluster-setup.md](docs/cluster-setup.md)
+A research project investigating a specific and underappreciated failure mode in RAG systems: *retrieved evidence that is individually relevant but collectively misleading*. Standard RAG pipelines treat retrieval quality as the main lever for improving generation. This project tests the hypothesis that **what happens to the retrieved set before it enters the prompt** is equally important — and that a modular contamination-aware controller inserted between retrieval and generation can materially reduce confident hallucinations without sacrificing utility on clean evidence.
 
 ---
 
-## Quick Start
+## Current Status
 
-### 1. Environment Setup
+> **PRD 1 (baseline harness) — complete. PRD 2 (error review dashboard) — complete. PRDs 3–4 (controller + evaluation) — not started.**
 
-```bash
-# Requires Python 3.11
-python -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
+| Stage | What it is | Status |
+|-------|-----------|--------|
+| **PRD 1** — Baseline harness | Five standard RAG variants, four benchmark datasets, full artifact logging, 210+ tests | ✅ Done |
+| **PRD 2** — Error review dashboard | Browser-based annotation tool for stratified AmbigDocs errors; human-verified failure taxonomy | ✅ Done |
+| **PRD 3** — Contamination controller | Contamination scoring, minimal-consistent-subset selection, abstention routing | 🔲 Not started |
+| **PRD 4** — Evaluation and paper artifacts | Ablations, metric suite, submission-quality tables | 🔲 Not started |
+
+The baselines are run on real hardware (Princeton HPC, Qwen2.5-32B) and produce real numbers. The controller they are designed to precede does not exist yet.
+
+---
+
+## The Problem
+
+RAG systems fail in two qualitatively distinct ways that current pipelines do not distinguish:
+
+1. **Retrieval-limited failure** — the retrieved set simply does not contain the right evidence. The model cannot recover. No controller helps here; better retrieval is needed.
+
+2. **Post-retrieval contamination failure** — evidence is present in the retrieved set, but the set as a whole is misleading: passages for multiple referents are mixed together, contradictory claims coexist, or partial-match lures anchor the model on the wrong entity. The model produces a confident, coherent, wrong answer.
+
+The second failure mode is the target of this project. It is different from hallucination in the absence of evidence — the model is actively *using* retrieved material, just the wrong parts of it.
+
+### Why This Matters for Safety
+
+Confident hallucinations in RAG are particularly dangerous in high-stakes retrieval settings (medical QA, legal document review, knowledge-base question answering) because the model's output *looks* grounded — it can cite passages — even when it has merged incompatible evidence or latched onto a same-name entity. Standard faithfulness metrics do not catch this because they only check whether the output is entailed by *some* passage in the context, not whether the passages themselves form a coherent evidentiary set.
+
+A contamination-aware controller that detects these conditions and either selects a minimal coherent subset or triggers calibrated abstention is a safety mechanism, not just an accuracy improvement.
+
+---
+
+## Key Baseline Finding
+
+All five standard baselines plateau at roughly 16% complete recall on AmbigDocs regardless of retrieval strategy. Adding reranking or reducing context yields only marginal gains. The dominant failure mode is not missing evidence — 70.5% of failures occur when evidence *is present* but the model collapses it into a partial or merged answer.
+
+![AmbigDocs answer category breakdown across all five baseline pipelines](analysis_plots/ambigdocs_error_categories.png)
+
+| Pipeline | Complete | Partial | Ambiguous | Merged | Wrong |
+|----------|----------|---------|-----------|--------|-------|
+| LLM-only | 0.2% | 4.2% | 4.2% | 0.2% | 91.2% |
+| Dense (no rerank) | 14.8% | 37.2% | 12.0% | 0.8% | 35.1% |
+| Hybrid (no rerank) | 15.0% | 37.2% | 13.2% | 0.7% | 33.9% |
+| Hybrid + rerank | **16.8%** | 38.0% | 10.5% | 0.9% | **33.9%** |
+| Hybrid + rerank (reduced ctx) | 14.0% | 41.5% | 7.9% | 0.4% | 36.2% |
+
+Multi-answer recall score (hybrid + rerank): **38.9%** on AmbigDocs, **71.4%** on RAMDocs.
+
+---
+
+## Approach
+
+The proposed architecture inserts a **contamination-aware controller** at a single well-defined point in the existing pipeline:
+
+```
+Input
+  -> Retriever
+  -> [Reranker]
+  -> [CONTROLLER]  <-- insertion point
+      |-- score retrieved set for contamination
+      |-- select minimal internally-consistent subset
+      +-- route: full-context / subset / abstain
+  -> Context Assembly
+  -> Prompt
+  -> Generator
+  -> Parse
+  -> Evaluate
 ```
 
-### 2. Run Tests
+The controller is designed to be stack-agnostic, auditable (every routing decision carries a reason code), and ablation-friendly. The three routing outcomes allow clean measurement of which component contributes: contamination detection alone, subset selection alone, or both combined.
 
-```bash
-# All unit + integration tests (no GPU / model download required)
-pytest tests/ -m "not slow" -q
+### Contamination Taxonomy
 
-# Full suite including model-dependent tests
-pytest tests/ -q
+The project distinguishes three operationally distinct contamination subtypes:
+
+- **T1 — Distractor contamination**: passages share surface terms with the query but push toward the wrong answer.
+- **T2 — Entity ambiguity**: retrieved set mixes evidence about different referents with the same name.
+- **T3 — Conflict contamination**: passages contain directly contradictory claims about the same entity or event.
+
+A fourth dimension — **retrieval instability** — captures cases where the answer changes materially under small perturbations to the top-k set, even when a gold passage is present.
+
+---
+
+## What Is in This Repo
+
+### Done
+
+- **Five baseline RAG systems** running on Qwen2.5-32B via vLLM, fully config-driven and reproducible from YAML.
+- **Four benchmark datasets** with dataset-specific adapters and evaluation modes: NQ-Open (factual QA), AmbigDocs (ambiguity), FaithEval (faithfulness under unanswerable / inconsistent / counterfactual context), RAMDocs (mixed conflict stress test).
+- **Structured artifact logging** at every stage: retrieval, reranking, prompt construction, generation, parsing, evaluation. All artifacts are JSONL and can be replayed or analyzed offline.
+- **Human error review dashboard** (`human_checks/index.html`) — a single-file browser app for annotating stratified AmbigDocs error samples, with keyboard navigation, LocalStorage persistence, and CSV/JSON export.
+- **210+ tests** (unit + integration), all green, no GPU required for the fast suite.
+
+### Not Done
+
+- The contamination-aware controller (PRD 3) — no code exists yet.
+- Contamination scoring, subset selection, abstention routing — all planned.
+- The controlled benchmark slice with matched clean / contaminated / missing-evidence conditions (PRD 2 controlled benchmark) — planned.
+- Formal evaluation campaign and paper artifacts (PRD 4) — planned.
+
+---
+
+## Repository Structure
+
 ```
+src/rag_baseline/
+|-- adapters/       # Dataset adapters: NQ-Open, AmbigDocs, FaithEval, RAMDocs
+|-- analysis/       # Plot generation scripts (run results -> PNG/CSV)
+|-- config/         # RunConfig schema + YAML loader
+|-- context/        # Deterministic context assembly
+|-- evaluation/     # EM, multi-answer recall/F1, dataset-specific dispatchers
+|-- generation/     # vLLM generator + MockGenerator for testing
+|-- inspection/     # Qualitative inspection pack export (>=25 examples)
+|-- logging/        # Structured JSONL artifact logger
+|-- parsing/        # Output parser: single-answer, multi-answer, unknown modes
+|-- pipeline/       # End-to-end pipeline runner (3-pass CPU/GPU/CPU design)
+|-- prompts/        # Prompt templates: families A (single), B (multi), C (unknown)
+|-- reranking/      # Cross-encoder reranker (bge-reranker-v2-m3)
+|-- retrieval/      # Dense (bge-base-en), sparse (BM25), hybrid, factory
+|-- schemas/        # Pydantic v2 schemas: InputExample -> EvaluationOutput
++-- cli.py          # Config-driven CLI entrypoint
 
-### 3. Run a Baseline (Dry Run)
-
-```bash
-python -m rag_baseline.cli --config configs/baselines/vanilla_rag.yaml --dry-run
-```
-
-### 4. Run a Baseline (Full)
-
-Requires a running vLLM server:
-
-```bash
-# Start vLLM (in a separate terminal)
-python -m vllm.entrypoints.openai.api_server \
-    --model Qwen/Qwen2.5-32B-Instruct \
-    --port 8000
-
-# Run baseline
-python -m rag_baseline.cli --config configs/baselines/hybrid_rerank.yaml
+configs/baselines/  # 5 pre-built YAML configs (one per baseline system)
+tests/
+|-- unit/           # 205 unit tests -- no GPU, no network
++-- integration/    # 5 end-to-end pipeline tests
+human_checks/       # Error review dashboard + stratified sample data
+analysis_plots/     # Generated figures and aggregated_metrics.csv
+outputs/            # Per-run artifacts (gitignored except structure)
 ```
 
 ---
 
 ## Baseline System Matrix
 
-| Baseline | Retriever | Reranker | Context | Config |
-|----------|-----------|----------|---------|--------|
-| **0 — LLM-only** | none | off | none | `llm_only.yaml` |
-| **A — Vanilla RAG** | dense | off | full | `vanilla_rag.yaml` |
-| **B — Hybrid RAG** | hybrid | off | full | `hybrid_rag.yaml` |
-| **C — Hybrid + Reranker** | hybrid | on | full | `hybrid_rerank.yaml` |
-| **D — Reduced Context** | hybrid | on | reduced | `reduced_context.yaml` |
+| ID | Name | Retriever | Reranker | Context | Config |
+|----|------|-----------|----------|---------|--------|
+| **0** | LLM-only | none | — | none | `llm_only.yaml` |
+| **A** | Vanilla RAG | dense | off | full top-10 | `vanilla_rag.yaml` |
+| **B** | Hybrid RAG | BM25 + dense | off | full top-10 | `hybrid_rag.yaml` |
+| **C** | Hybrid + Reranker | BM25 + dense | cross-encoder | full top-5 | `hybrid_rerank.yaml` |
+| **D** | Reduced Context | BM25 + dense | cross-encoder | top-2 only | `reduced_context.yaml` |
 
-All configs are in `configs/baselines/`.
+Model: `Qwen/Qwen2.5-32B-Instruct` · Retrieval: `BAAI/bge-base-en-v1.5` · Reranker: `BAAI/bge-reranker-v2-m3`
 
 ---
 
 ## Benchmark Ladder
 
-| Tier | Dataset | HuggingFace ID | Purpose |
-|------|---------|---------------|---------|
-| 0 | NQ-Open | `google-research-datasets/nq_open` | Sanity factual QA |
-| 1 | AmbigDocs | `yoonsanglee/AmbigDocs` | Core ambiguity QA |
-| 2 | FaithEval | `Salesforce/FaithEval-*-v1.0` | Context faithfulness |
-| 3 | RAMDocs | `HanNight/RAMDocs` | Mixed conflict stress test |
+| Tier | Dataset | HuggingFace ID | Task | Answer Mode |
+|------|---------|----------------|------|-------------|
+| 0 | NQ-Open | `google-research-datasets/nq_open` | Factual sanity check | single |
+| 1 | AmbigDocs | `yoonsanglee/AmbigDocs` | Same-name entity disambiguation | multi |
+| 2 | FaithEval | `Salesforce/FaithEval-*-v1.0` | Faithfulness under bad context | single + unknown |
+| 3 | RAMDocs | `HanNight/RAMDocs` | Mixed ambiguity + misinformation + noise | multi + unknown |
 
-### FaithEval Subtasks
-
-FaithEval comprises three separate subtasks:
-- **Unanswerable** — context lacks answer (expect "unknown")
-- **Inconsistent** — context is self-contradictory (expect "conflict")
-- **Counterfactual** — context presents wrong facts (test faithfulness)
+FaithEval has three subtasks: **unanswerable** (context omits answer), **inconsistent** (context self-contradicts), **counterfactual** (context states wrong facts).
 
 ---
 
-## Project Structure
+## Quick Start
 
-```
-src/rag_baseline/
-├── adapters/          # Dataset adapters (NQ, AmbigDocs, FaithEval, RAMDocs)
-├── config/            # RunConfig schema + YAML loading
-├── context/           # Deterministic context assembly
-├── evaluation/        # EM, multi-answer, dataset-specific scorers
-├── generation/        # vLLM generator + mock for testing
-├── inspection/        # Qualitative inspection pack export
-├── logging/           # Structured JSONL artifact logging
-├── parsing/           # Output parser (single/multi/unknown modes)
-├── pipeline/          # End-to-end pipeline runner
-├── prompts/           # Prompt templates (families A/B/C)
-├── reranking/         # Cross-encoder reranker
-├── retrieval/         # Dense, sparse, hybrid retrieval
-├── schemas/           # Pydantic schemas (input → evaluation)
-└── cli.py             # Config-driven CLI entrypoint
+### Environment
 
-configs/baselines/     # 5 pre-built baseline YAML configs
-tests/
-├── unit/              # 210+ unit tests
-└── integration/       # End-to-end pipeline tests
-```
-
----
-
-## Running Specific Datasets
-
-### NQ-Open (Tier 0)
 ```bash
-python -m rag_baseline.cli --config configs/baselines/hybrid_rerank.yaml --max-examples 100
+# Python 3.11 required
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -e ".[dev]"
 ```
 
-### AmbigDocs (Tier 1)
-Edit config to set `dataset: ambigdocs`, or create a new YAML:
-```yaml
-dataset: ambigdocs
-split: validation
-retriever_type: hybrid
-reranker_enabled: true
-# ...
+### Tests (no GPU needed)
+
+```bash
+# Fast suite -- unit + integration, no model downloads
+pytest tests/ -m "not slow" -q
+
+# Full suite including retrieval model tests
+pytest tests/ -q
 ```
 
-### FaithEval (Tier 2)
-```yaml
-dataset: faitheval
-split: test
-retriever_type: none          # FaithEval bundles its own context
-context_strategy: full
-answer_mode: single_answer
+### Dry run (validates config, no generation)
+
+```bash
+python -m rag_baseline.cli \
+    --config configs/baselines/vanilla_rag.yaml \
+    --dry-run
 ```
 
-### RAMDocs (Tier 3)
-```yaml
-dataset: ramdocs
-split: test
-retriever_type: none          # RAMDocs bundles its own documents
-context_strategy: full
-answer_mode: multi_answer
+### Full run (requires vLLM server)
+
+```bash
+# Terminal 1 -- start the LLM server
+python -m vllm.entrypoints.openai.api_server \
+    --model Qwen/Qwen2.5-32B-Instruct \
+    --port 8000
+
+# Terminal 2 -- run the strong baseline
+python -m rag_baseline.cli \
+    --config configs/baselines/hybrid_rerank.yaml
 ```
 
----
-
-## Evaluation Modes
-
-| Dataset | Answer Mode | Metric | Unknown Support |
-|---------|------------|--------|----------------|
-| NQ-Open | `single_answer` | Normalized EM | No |
-| AmbigDocs | `multi_answer` | Multi-answer recall/F1 | No |
-| FaithEval | `single_answer` | EM (per subtask) | Yes |
-| RAMDocs | `multi_answer` | Multi-answer recall/F1 | Yes |
-
----
-
-## Qualitative Inspection
-
-Export a ≥25-example inspection pack from run artifacts:
-
-```python
-from rag_baseline.inspection.qualitative import (
-    sample_inspection_pack,
-    export_inspection_pack,
-)
-
-# artifacts = list of run artifact dicts (from JSONL logs)
-pack = sample_inspection_pack(artifacts, min_total=25, seed=42)
-export_inspection_pack(pack, "outputs/inspection_pack.jsonl")
-```
-
-This produces:
-- `inspection_pack.jsonl` — one example per line with question, prediction, gold, category
-- `inspection_summary.json` — counts per category
+Artifacts are written to `outputs/hybrid_rerank/`: `inputs.jsonl`, `retrievals.jsonl`, `prompts.jsonl`, `predictions.jsonl`, `evaluations.jsonl`, `summary_metrics.json`.
 
 ---
 
 ## Configuration Reference
 
-All configs use `RunConfig` (see `src/rag_baseline/config/schema.py`):
+Configs live in `configs/baselines/`. All fields map to `RunConfig` (`src/rag_baseline/config/schema.py`):
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `dataset` | str | Dataset name (nq_open, ambigdocs, faitheval, ramdocs) |
-| `split` | str | HuggingFace split (train, validation, test) |
-| `retriever_type` | str | dense, sparse, hybrid, none |
-| `reranker_enabled` | bool | Enable cross-encoder reranking |
-| `generator_model` | str | Model ID for vLLM |
-| `prompt_family` | str | Prompt family (A, B, C) |
-| `top_k_retrieval` | int | Number of passages to retrieve |
-| `top_k_after_rerank` | int | Passages after reranking |
-| `context_strategy` | str | full, reduced, none |
-| `answer_mode` | str | single_answer, multi_answer |
-| `output_dir` | str | Output directory for artifacts |
-| `random_seed` | int | Seed for reproducibility |
+| Field | Type | Values |
+|-------|------|--------|
+| `dataset` | str | `nq_open` · `ambigdocs` · `faitheval` · `ramdocs` |
+| `split` | str | `train` · `validation` · `test` |
+| `retriever_type` | str | `dense` · `sparse` · `hybrid` · `none` |
+| `reranker_enabled` | bool | `true` / `false` |
+| `generator_model` | str | any vLLM-compatible model ID |
+| `prompt_family` | str | `A` (single) · `B` (multi) · `C` (unknown) |
+| `top_k_retrieval` | int | passages fetched before rerank |
+| `top_k_after_rerank` | int | passages after rerank |
+| `context_strategy` | str | `full` · `reduced` · `none` |
+| `answer_mode` | str | `single_answer` · `multi_answer` |
+| `output_dir` | str | path for all run artifacts |
+| `random_seed` | int | reproducibility seed |
 
 ---
 
-## Architecture: Controller Insertion Point
+## Evaluation Modes
 
-The pipeline follows a clean separation:
+| Dataset | Metric | Unknown Output |
+|---------|--------|---------------|
+| NQ-Open | Normalized exact match | No |
+| AmbigDocs | Multi-answer recall + F1 | No |
+| FaithEval | Exact match per subtask | Yes (`unknown` / `conflict`) |
+| RAMDocs | Multi-answer recall + F1 | Yes |
 
+---
+
+## Error Review Dashboard
+
+The `human_checks/` dashboard is a single-file browser app for annotating stratified AmbigDocs error samples:
+
+```bash
+# Serve from repo root so relative paths resolve
+python -m http.server 8080
+# Then open: http://localhost:8080/human_checks/
 ```
-Input → Retrieval → [Reranking] → Context Assembly → Prompt → Generation → Parse → Evaluate
+
+The dashboard auto-loads on open:
+
+1. `human_checks/ambigdocs_stratified_error_samples.jsonl` — 20 stratified error examples
+2. `outputs/hybrid_rerank/retrievals.jsonl` — full retrieved passage text
+3. `outputs/hybrid_rerank/prompts.jsonl` — prompts shown in the collapsible panel
+
+Annotations persist in LocalStorage and can be exported as JSON or CSV.
+
+---
+
+## Cluster Setup (Princeton HPC / SLURM)
+
+Compute nodes have no internet access. Pre-cache everything on a login node first:
+
+```bash
+# 1 -- Download retrieval + reranking models
+bash slurm/precache_models.sh
+
+# 2 -- Download benchmark datasets
+bash slurm/precache_datasets.sh
+
+# 3 -- Submit baseline jobs
+sbatch slurm/run_baselines.sh
 ```
 
-A future contamination-aware controller can be inserted between **Reranking** and **Context Assembly** to filter, score, or reweight passages before they enter the prompt.
+Full guide (environment setup, Qwen download, smoke-check, troubleshooting): [docs/cluster-setup.md](docs/cluster-setup.md)
 
 ---
 
@@ -255,49 +308,37 @@ A future contamination-aware controller can be inserted between **Reranking** an
 
 ---
 
-## AmbigDocs Error Analysis
+## Qualitative Inspection
 
-### Baseline Results: Answer Category Breakdown
+Export a stratified inspection pack from any run's artifacts:
 
-![AmbigDocs Error Categories](analysis_plots/ambigdocs_error_categories.png)
+```python
+from rag_baseline.inspection.qualitative import (
+    export_inspection_pack,
+    sample_inspection_pack,
+)
 
-The chart above breaks down answer outcomes across all five baseline pipelines. Key findings:
-
-**LLM-only is nearly always wrong for multi-answer questions.**
-Without retrieval, the model produces roughly 92% "Wrong" answers on AmbigDocs — it either returns a single answer for a multi-sense question or returns a confidently wrong referent. Only ~4% of responses are even partially correct.
-
-**RAG dramatically reduces outright wrong answers — but partial recall dominates.**
-All four RAG variants drop the "Wrong" fraction from ~92% to ~33–36%. The dominant outcome shifts to "Partial" (~37–40%), meaning the model finds and returns *some* correct answers but consistently misses others. This is the core failure mode this project targets.
-
-**Complete recall plateaus at ~15% regardless of retrieval strategy.**
-Hybrid + reranking (`hybrid_rerank_full`) achieves the highest complete recall at ~16%, and dense + hybrid variants cluster tightly at 14–15%. Additional retrieval sophistication (reranking, reduced context) yields marginal gains. This ceiling suggests that incomplete retrieval coverage — not reranking quality — is the binding constraint.
-
-**"Ambiguous" and "Merged" categories are small but meaningful.**
-Cross-entity blending and single-answer collapse together account for ~10–13% of RAG outputs and likely reflect cases where retrieved passages for multiple referents are present but the model conflates them rather than separating them.
-
-### What We Are Doing Next
-
-The plateau at ~15% complete recall under all current baselines exposes two distinct failure modes that require separate fixes:
-
-1. **Retrieval-limited failures (~29.5% of errors):** The retrieved set simply does not cover all valid referents. The model cannot recover even in principle. Fix: contamination-aware re-ranking or query expansion that explicitly targets entity disambiguation.
-
-2. **Post-retrieval failures (~70.5% of errors):** Evidence is present but not fully used — either through single-answer collapse, omission of supported answers, or entity blending. Fix: a contamination-aware context controller that restructures or gates the context before it enters the prompt, combined with a multi-answer extraction constraint.
-
-**Next step** is a human error review pass using `human_checks/index.html` to validate the heuristic-based categorization above, identify the precise split between retrieval-limited and post-retrieval cases, and collect labelled examples for few-shot prompt design for PRD 3 (the contamination-aware controller).
-
-To start the review dashboard:
-```bash
-# Serve from the repo root so relative paths resolve automatically
-python -m http.server 8080
-# Open http://localhost:8080/human_checks/
+# artifacts: list of dicts loaded from a run's evaluations.jsonl
+pack = sample_inspection_pack(artifacts, min_total=25, seed=42)
+export_inspection_pack(pack, "outputs/inspection_pack.jsonl")
 ```
 
-The dashboard auto-loads three files on open — no drag-and-drop needed:
-1. `human_checks/ambigdocs_stratified_error_samples.jsonl` — the 20 stratified error examples
-2. `outputs/hybrid_rerank/retrievals.jsonl` — full passage text for each example
-3. `outputs/hybrid_rerank/prompts.jsonl` — prompts shown in the collapsible prompt panel
+Produces `inspection_pack.jsonl` (one example per line: question, prediction, gold, category) and `inspection_summary.json` (counts per category).
 
-If the server isn't available (e.g. opening as a local file), you can still drop files manually onto the left sidebar.
+---
+
+## Related Work
+
+This project is directly motivated by several recent benchmarks and findings:
+
+- **AmbigDocs** — entity disambiguation under same-name ambiguity; the primary Tier 1 benchmark here.
+- **FaithEval** (ICLR 2025, Salesforce) — faithfulness under unanswerable / inconsistent / counterfactual context.
+- **RAMDocs / MADAM-RAG** (2025) — mixed ambiguity + misinformation + noise in a single retrieved set.
+- **WikiContradict** (NeurIPS 2024 D&B) — contradictory Wikipedia passages as a first-class evaluation condition.
+- **BAR-RAG** (2026) — brittleness under retrieval noise even when gold evidence is present in top-k.
+- **CONFLICTBANK** (NeurIPS 2024 D&B) — knowledge conflicts as a hallucination cause, including same-name entity conflicts.
+
+The contamination controller design is motivated by the gap identified across this literature: while reranking and compression improve individual passage relevance, no standard component explicitly models *whether the retrieved set as a whole forms a coherent evidentiary basis*.
 
 ---
 

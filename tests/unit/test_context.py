@@ -17,10 +17,14 @@ class TestContextAssembly:
     @pytest.fixture
     def sample_passages(self):
         from rag_baseline.schemas.retrieval import RetrievedPassage
+
         return [
             RetrievedPassage(
-                passage_id=f"p{i}", text=f"Passage {i} content here.",
-                source=f"doc_{i}", retrieval_score=10.0 - i, rank=i,
+                passage_id=f"p{i}",
+                text=f"Passage {i} content here.",
+                source=f"doc_{i}",
+                retrieval_score=10.0 - i,
+                rank=i,
             )
             for i in range(1, 6)
         ]
@@ -28,18 +32,31 @@ class TestContextAssembly:
     @pytest.fixture
     def sample_reranked_passages(self):
         from rag_baseline.schemas.rerank import RerankedPassage
+
         return [
             RerankedPassage(
-                passage_id="p3", text="Passage 3 content here.", source="doc_3",
-                retrieval_score=8.0, rerank_score=0.95, rank_after_rerank=1,
+                passage_id="p3",
+                text="Passage 3 content here.",
+                source="doc_3",
+                retrieval_score=8.0,
+                rerank_score=0.95,
+                rank_after_rerank=1,
             ),
             RerankedPassage(
-                passage_id="p1", text="Passage 1 content here.", source="doc_1",
-                retrieval_score=10.0, rerank_score=0.80, rank_after_rerank=2,
+                passage_id="p1",
+                text="Passage 1 content here.",
+                source="doc_1",
+                retrieval_score=10.0,
+                rerank_score=0.80,
+                rank_after_rerank=2,
             ),
             RerankedPassage(
-                passage_id="p5", text="Passage 5 content here.", source="doc_5",
-                retrieval_score=6.0, rerank_score=0.60, rank_after_rerank=3,
+                passage_id="p5",
+                text="Passage 5 content here.",
+                source="doc_5",
+                retrieval_score=6.0,
+                rerank_score=0.60,
+                rank_after_rerank=3,
             ),
         ]
 

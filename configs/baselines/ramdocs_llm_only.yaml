@@ -1,13 +1,24 @@
+﻿# RAMDocs -- LLM-Only (no retrieval)
+# Control run for mixed-conflict stress-test benchmark.
+# RAMDocs bundles documents per example; retriever is not used here.
+
+# --- dataset ---
 dataset: ramdocs
 split: test
+
+# --- retrieval ---
 retriever_type: none
 reranker_enabled: false
-generator_model: Qwen/Qwen2.5-32B-Instruct
-prompt_family: multi_answer
 top_k_retrieval: 0
 top_k_after_rerank: 0
 context_strategy: none
+
+# --- generation ---
+generator_model: Qwen/Qwen2.5-32B-Instruct
+prompt_family: multi_answer
 answer_mode: multi
+vllm_base_url: http://localhost:8000/v1
+
+# --- output ---
 output_dir: outputs/ramdocs_llm_only
 random_seed: 42
-vllm_base_url: http://localhost:8000/v1

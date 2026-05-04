@@ -14,12 +14,10 @@ import json
 import os
 import tempfile
 
-import pytest
-
-
 # ---------------------------------------------------------------------------
 # Sample evaluation artifacts for testing
 # ---------------------------------------------------------------------------
+
 
 def _make_artifact(
     example_id: str,
@@ -52,33 +50,165 @@ SAMPLE_ARTIFACTS = [
     # Clean successes
     _make_artifact("nq_0", "Capital of France?", "Paris", "Paris", True, category="clean_success"),
     _make_artifact("nq_1", "Largest ocean?", "Pacific", "Pacific", True, category="clean_success"),
-    _make_artifact("nq_2", "Speed of light?", "299792458 m/s", "299792458 m/s", True, category="clean_success"),
+    _make_artifact(
+        "nq_2", "Speed of light?", "299792458 m/s", "299792458 m/s", True, category="clean_success"
+    ),
     _make_artifact("nq_3", "H2O is?", "water", "water", True, category="clean_success"),
     _make_artifact("nq_4", "Earth's star?", "Sun", "Sun", True, category="clean_success"),
     _make_artifact("nq_5", "Boiling point?", "100C", "100C", True, category="clean_success"),
     _make_artifact("nq_6", "Highest peak?", "Everest", "Everest", True, category="clean_success"),
     _make_artifact("nq_7", "Closest planet?", "Mercury", "Mercury", True, category="clean_success"),
-    _make_artifact("nq_8", "DNA shape?", "double helix", "double helix", True, category="clean_success"),
+    _make_artifact(
+        "nq_8", "DNA shape?", "double helix", "double helix", True, category="clean_success"
+    ),
     _make_artifact("nq_9", "Pi value?", "3.14159", "3.14159", True, category="clean_success"),
     # Ambiguity failures
-    _make_artifact("ambig_0", "Who is Jordan?", "Michael Jordan", "Michael Jordan;Jordan (country)", False, dataset="ambigdocs", category="ambiguity_failure"),
-    _make_artifact("ambig_1", "When was Georgia founded?", "1732", "1785;1732", False, dataset="ambigdocs", category="ambiguity_failure"),
-    _make_artifact("ambig_2", "Capital of Springfield?", "unknown", "Springfield IL;Springfield MO", False, dataset="ambigdocs", category="ambiguity_failure"),
-    _make_artifact("ambig_3", "Who wrote Mercury?", "Freddie Mercury", "planet;element;artist", False, dataset="ambigdocs", category="ambiguity_failure"),
-    _make_artifact("ambig_4", "When did Apple start?", "1976", "1976;Apple Records 1968", False, dataset="ambigdocs", category="ambiguity_failure"),
-    _make_artifact("ambig_5", "Who is Washington?", "George W.", "George;state;DC", False, dataset="ambigdocs", category="ambiguity_failure"),
-    _make_artifact("ambig_6", "What is Python?", "snake", "snake;language", False, dataset="ambigdocs", category="ambiguity_failure"),
-    _make_artifact("ambig_7", "What is Java?", "island", "island;language;coffee", False, dataset="ambigdocs", category="ambiguity_failure"),
+    _make_artifact(
+        "ambig_0",
+        "Who is Jordan?",
+        "Michael Jordan",
+        "Michael Jordan;Jordan (country)",
+        False,
+        dataset="ambigdocs",
+        category="ambiguity_failure",
+    ),
+    _make_artifact(
+        "ambig_1",
+        "When was Georgia founded?",
+        "1732",
+        "1785;1732",
+        False,
+        dataset="ambigdocs",
+        category="ambiguity_failure",
+    ),
+    _make_artifact(
+        "ambig_2",
+        "Capital of Springfield?",
+        "unknown",
+        "Springfield IL;Springfield MO",
+        False,
+        dataset="ambigdocs",
+        category="ambiguity_failure",
+    ),
+    _make_artifact(
+        "ambig_3",
+        "Who wrote Mercury?",
+        "Freddie Mercury",
+        "planet;element;artist",
+        False,
+        dataset="ambigdocs",
+        category="ambiguity_failure",
+    ),
+    _make_artifact(
+        "ambig_4",
+        "When did Apple start?",
+        "1976",
+        "1976;Apple Records 1968",
+        False,
+        dataset="ambigdocs",
+        category="ambiguity_failure",
+    ),
+    _make_artifact(
+        "ambig_5",
+        "Who is Washington?",
+        "George W.",
+        "George;state;DC",
+        False,
+        dataset="ambigdocs",
+        category="ambiguity_failure",
+    ),
+    _make_artifact(
+        "ambig_6",
+        "What is Python?",
+        "snake",
+        "snake;language",
+        False,
+        dataset="ambigdocs",
+        category="ambiguity_failure",
+    ),
+    _make_artifact(
+        "ambig_7",
+        "What is Java?",
+        "island",
+        "island;language;coffee",
+        False,
+        dataset="ambigdocs",
+        category="ambiguity_failure",
+    ),
     # Conflicting-evidence failures
-    _make_artifact("faith_0", "Water freezes at?", "100C", "unknown", False, dataset="faitheval", category="conflicting_evidence_failure"),
-    _make_artifact("faith_1", "Closest to Sun?", "Venus", "conflict", False, dataset="faitheval", category="conflicting_evidence_failure"),
-    _make_artifact("faith_2", "Gravity constant?", "wrong", "unknown", False, dataset="faitheval", category="conflicting_evidence_failure"),
-    _make_artifact("faith_3", "Moon material?", "marshmallows", "unknown", False, dataset="faitheval", category="conflicting_evidence_failure"),
-    _make_artifact("faith_4", "Boiling at?", "50C", "conflict", False, dataset="faitheval", category="conflicting_evidence_failure"),
+    _make_artifact(
+        "faith_0",
+        "Water freezes at?",
+        "100C",
+        "unknown",
+        False,
+        dataset="faitheval",
+        category="conflicting_evidence_failure",
+    ),
+    _make_artifact(
+        "faith_1",
+        "Closest to Sun?",
+        "Venus",
+        "conflict",
+        False,
+        dataset="faitheval",
+        category="conflicting_evidence_failure",
+    ),
+    _make_artifact(
+        "faith_2",
+        "Gravity constant?",
+        "wrong",
+        "unknown",
+        False,
+        dataset="faitheval",
+        category="conflicting_evidence_failure",
+    ),
+    _make_artifact(
+        "faith_3",
+        "Moon material?",
+        "marshmallows",
+        "unknown",
+        False,
+        dataset="faitheval",
+        category="conflicting_evidence_failure",
+    ),
+    _make_artifact(
+        "faith_4",
+        "Boiling at?",
+        "50C",
+        "conflict",
+        False,
+        dataset="faitheval",
+        category="conflicting_evidence_failure",
+    ),
     # Unknown/abstention
-    _make_artifact("un_0", "Unsupported question?", "unknown", "unknown", True, dataset="faitheval", category="unknown_correct"),
-    _make_artifact("un_1", "No info available?", "unknown", "unknown", True, dataset="faitheval", category="unknown_correct"),
-    _make_artifact("un_2", "Unanswerable?", "I don't know", "unknown", True, dataset="faitheval", category="unknown_correct"),
+    _make_artifact(
+        "un_0",
+        "Unsupported question?",
+        "unknown",
+        "unknown",
+        True,
+        dataset="faitheval",
+        category="unknown_correct",
+    ),
+    _make_artifact(
+        "un_1",
+        "No info available?",
+        "unknown",
+        "unknown",
+        True,
+        dataset="faitheval",
+        category="unknown_correct",
+    ),
+    _make_artifact(
+        "un_2",
+        "Unanswerable?",
+        "I don't know",
+        "unknown",
+        True,
+        dataset="faitheval",
+        category="unknown_correct",
+    ),
 ]
 
 

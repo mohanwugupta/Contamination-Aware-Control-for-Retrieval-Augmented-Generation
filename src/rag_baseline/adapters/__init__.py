@@ -38,6 +38,5 @@ def create_adapter(dataset: str) -> BaseAdapter:
         return RAMDocsAdapter()
     else:
         raise ValueError(
-            f"Unknown dataset: {dataset}. "
-            f"Supported: nq_open, ambigdocs, faitheval, ramdocs"
+            f"Unknown dataset: {dataset}. " f"Supported: nq_open, ambigdocs, faitheval, ramdocs"
         )

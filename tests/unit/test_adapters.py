@@ -7,31 +7,35 @@ Tests the base adapter interface and concrete adapters for:
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Base adapter interface
 # ---------------------------------------------------------------------------
+
 
 class TestBaseAdapter:
     """Base adapter must be abstract with load() and get_corpus() methods."""
 
     def test_base_adapter_is_abstract(self):
         from rag_baseline.adapters.base import BaseAdapter
+
         with pytest.raises(TypeError):
             BaseAdapter()
 
     def test_base_adapter_has_load_method(self):
         from rag_baseline.adapters.base import BaseAdapter
+
         assert hasattr(BaseAdapter, "load")
 
     def test_base_adapter_has_get_corpus_method(self):
         from rag_baseline.adapters.base import BaseAdapter
+
         assert hasattr(BaseAdapter, "get_corpus")
 
 
 # ---------------------------------------------------------------------------
 # NQ-Open adapter
 # ---------------------------------------------------------------------------
+
 
 class TestNQOpenAdapter:
     """NQ-Open adapter normalizes HuggingFace NQ-Open into InputExample."""
@@ -149,6 +153,7 @@ class TestNQOpenAdapter:
 # ---------------------------------------------------------------------------
 # AmbigDocs adapter
 # ---------------------------------------------------------------------------
+
 
 class TestAmbigDocsAdapter:
     """AmbigDocs adapter normalizes HuggingFace AmbigDocs into InputExample."""
@@ -322,6 +327,7 @@ class TestAmbigDocsAdapter:
 # Adapter factory
 # ---------------------------------------------------------------------------
 
+
 class TestAdapterFactory:
     """Factory creates the right adapter by dataset name."""
 
@@ -330,6 +336,7 @@ class TestAdapterFactory:
 
         adapter = create_adapter("nq_open")
         from rag_baseline.adapters.nq_open import NQOpenAdapter
+
         assert isinstance(adapter, NQOpenAdapter)
 
     def test_factory_creates_ambigdocs(self):
@@ -337,6 +344,7 @@ class TestAdapterFactory:
 
         adapter = create_adapter("ambigdocs")
         from rag_baseline.adapters.ambigdocs import AmbigDocsAdapter
+
         assert isinstance(adapter, AmbigDocsAdapter)
 
     def test_factory_rejects_unknown(self):

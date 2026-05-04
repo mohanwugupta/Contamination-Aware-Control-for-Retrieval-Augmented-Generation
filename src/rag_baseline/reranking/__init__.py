@@ -18,4 +18,5 @@ def create_reranker(reranker_model: str | None = None) -> BaseReranker | None:
         return None
 
     from rag_baseline.reranking.cross_encoder import CrossEncoderReranker
+
     return CrossEncoderReranker(model_name=reranker_model)

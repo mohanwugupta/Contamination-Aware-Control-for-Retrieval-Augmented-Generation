@@ -7,12 +7,11 @@ presenting a uniform outer interface. Must support:
 - FaithEval-like: context-faithfulness categories
 """
 
-import pytest
-
 
 # ---------------------------------------------------------------------------
 # Exact match scorer (NQ-like)
 # ---------------------------------------------------------------------------
+
 
 class TestExactMatchScorer:
     """Tests for normalized exact match scoring."""
@@ -53,6 +52,7 @@ class TestExactMatchScorer:
 # ---------------------------------------------------------------------------
 # Multi-answer scorer (AmbigDocs-like)
 # ---------------------------------------------------------------------------
+
 
 class TestMultiAnswerScorer:
     """Tests for multi-answer scoring (PRD 1 §11.2)."""
@@ -167,6 +167,7 @@ class TestMultiAnswerScorer:
 # ---------------------------------------------------------------------------
 # Scorer dispatch
 # ---------------------------------------------------------------------------
+
 
 class TestScorerDispatch:
     """Tests for the unified evaluation interface."""

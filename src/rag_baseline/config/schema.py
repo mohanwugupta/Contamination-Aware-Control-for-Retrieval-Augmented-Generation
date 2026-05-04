@@ -13,7 +13,6 @@ from typing import Literal
 import yaml
 from pydantic import BaseModel, field_validator, model_validator
 
-
 RetrieverType = Literal["dense", "sparse", "hybrid", "none"]
 ContextStrategy = Literal["full", "reduced", "none"]
 AnswerMode = Literal["single", "multi", "unknown_or_abstain"]
@@ -59,14 +58,10 @@ class RunConfig(BaseModel):
         if self.retriever_type == "none":
             # LLM-only mode: top_k must be 0 and context_strategy must be none
             if self.context_strategy != "none":
-                raise ValueError(
-                    "context_strategy must be 'none' when retriever_type is 'none'"
-                )
+                raise ValueError("context_strategy must be 'none' when retriever_type is 'none'")
         else:
             if self.top_k_retrieval < 1:
-                raise ValueError(
-                    "top_k_retrieval must be >= 1 when retriever_type is not 'none'"
-                )
+                raise ValueError("top_k_retrieval must be >= 1 when retriever_type is not 'none'")
         return self
 
     # --- derived properties ---

@@ -80,6 +80,7 @@ class ArtifactLogger:
     def save_run_config(self, config: object) -> None:
         """Save run config as YAML."""
         from rag_baseline.config.schema import RunConfig
+
         if isinstance(config, RunConfig):
             config.to_yaml(self.output_dir / "run_config.yaml")
 

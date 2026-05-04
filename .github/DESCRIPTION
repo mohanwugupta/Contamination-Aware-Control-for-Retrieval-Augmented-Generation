@@ -1,0 +1,1 @@
+Research harness for studying contamination failure modes in RAG — baseline systems, benchmark ladder (NQ-Open / AmbigDocs / FaithEval / RAMDocs), artifact logging, and error annotation dashboard. PRD 3 (contamination-aware controller) not yet started.

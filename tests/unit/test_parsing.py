@@ -6,7 +6,6 @@ Parser must support three answer modes:
 - unknown_or_abstain
 """
 
-import pytest
 
 
 class TestOutputParser:
@@ -23,7 +22,7 @@ class TestOutputParser:
     def test_parse_multi_answer(self):
         from rag_baseline.parsing.output_parser import parse_output
 
-        raw = "Answers: [\"1963\", \"1956\"]"
+        raw = 'Answers: ["1963", "1956"]'
         result = parse_output(raw, answer_mode="multi")
         assert result.multi_answers is not None
         assert len(result.multi_answers) >= 1

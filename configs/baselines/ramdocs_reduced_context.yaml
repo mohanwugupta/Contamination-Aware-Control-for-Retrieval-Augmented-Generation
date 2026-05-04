@@ -1,15 +1,26 @@
+﻿# RAMDocs -- Reduced-Context RAG
+# Baseline D on the mixed-conflict stress-test benchmark.
+# Top-2 passages only; diagnostic for "less context" effect.
+
+# --- dataset ---
 dataset: ramdocs
 split: test
+
+# --- retrieval ---
 retriever_type: hybrid
 reranker_enabled: true
-generator_model: Qwen/Qwen2.5-32B-Instruct
-prompt_family: multi_answer
 top_k_retrieval: 10
 top_k_after_rerank: 2
 context_strategy: reduced
-answer_mode: multi
-output_dir: outputs/ramdocs_reduced_context
-random_seed: 42
 dense_model: BAAI/bge-base-en-v1.5
 reranker_model: BAAI/bge-reranker-v2-m3
+
+# --- generation ---
+generator_model: Qwen/Qwen2.5-32B-Instruct
+prompt_family: multi_answer
+answer_mode: multi
 vllm_base_url: http://localhost:8000/v1
+
+# --- output ---
+output_dir: outputs/ramdocs_reduced_context
+random_seed: 42

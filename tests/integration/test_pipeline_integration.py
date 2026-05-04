@@ -17,17 +17,40 @@ class TestNQOpenIntegration:
         return [
             {"question": "When was Michael Jordan born?", "answer": ["1963"]},
             {"question": "What is the capital of France?", "answer": ["Paris"]},
-            {"question": "Who wrote Romeo and Juliet?", "answer": ["William Shakespeare", "Shakespeare"]},
+            {
+                "question": "Who wrote Romeo and Juliet?",
+                "answer": ["William Shakespeare", "Shakespeare"],
+            },
         ]
 
     @pytest.fixture
     def corpus(self):
         return [
-            {"passage_id": "p1", "text": "Michael Jordan was born in 1963 in Brooklyn, New York.", "source": "wiki_mj"},
-            {"passage_id": "p2", "text": "Paris is the capital and largest city of France.", "source": "wiki_paris"},
-            {"passage_id": "p3", "text": "Romeo and Juliet is a tragedy written by William Shakespeare.", "source": "wiki_rj"},
-            {"passage_id": "p4", "text": "Basketball was invented by James Naismith in 1891.", "source": "wiki_bball"},
-            {"passage_id": "p5", "text": "France is a country in Western Europe.", "source": "wiki_france"},
+            {
+                "passage_id": "p1",
+                "text": "Michael Jordan was born in 1963 in Brooklyn, New York.",
+                "source": "wiki_mj",
+            },
+            {
+                "passage_id": "p2",
+                "text": "Paris is the capital and largest city of France.",
+                "source": "wiki_paris",
+            },
+            {
+                "passage_id": "p3",
+                "text": "Romeo and Juliet is a tragedy written by William Shakespeare.",
+                "source": "wiki_rj",
+            },
+            {
+                "passage_id": "p4",
+                "text": "Basketball was invented by James Naismith in 1891.",
+                "source": "wiki_bball",
+            },
+            {
+                "passage_id": "p5",
+                "text": "France is a country in Western Europe.",
+                "source": "wiki_france",
+            },
         ]
 
     def test_nq_adapter_to_pipeline(self, tmp_path, nq_rows, corpus):
@@ -124,7 +147,7 @@ class TestAmbigDocsIntegration:
                         "Michael I. Jordan (scientist)",
                     ],
                     "text": [
-                        "Michael Jordan attended Laney High School and University of North Carolina.",
+                        "Michael Jordan attended Laney High School and UNC.",
                         "Michael I. Jordan studied at UC San Diego and earned his PhD from MIT.",
                     ],
                     "pid": ["mj_bball", "mj_sci"],

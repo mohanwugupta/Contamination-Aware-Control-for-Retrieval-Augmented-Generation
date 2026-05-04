@@ -34,9 +34,7 @@ class NQOpenAdapter(BaseAdapter):
         ds = _load_hf_split(self.HF_DATASET_ID, split, f"nq_open_{split}")
         return self.load_from_dicts(list(ds), split=split)
 
-    def load_from_dicts(
-        self, rows: list[dict], split: str = "validation"
-    ) -> list[InputExample]:
+    def load_from_dicts(self, rows: list[dict], split: str = "validation") -> list[InputExample]:
         """Normalize raw NQ-Open dicts into InputExamples.
 
         Args:

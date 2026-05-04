@@ -11,10 +11,10 @@ RetrievalOutput schema-compliant results.
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Base retriever interface contract
 # ---------------------------------------------------------------------------
+
 
 class TestRetrieverInterface:
     """All retriever implementations must satisfy this contract."""
@@ -27,10 +27,12 @@ class TestRetrieverInterface:
 
     def test_base_retriever_has_retrieve_method(self):
         from rag_baseline.retrieval.base import BaseRetriever
+
         assert hasattr(BaseRetriever, "retrieve")
 
     def test_base_retriever_has_index_method(self):
         from rag_baseline.retrieval.base import BaseRetriever
+
         assert hasattr(BaseRetriever, "index")
 
 
@@ -38,17 +40,34 @@ class TestRetrieverInterface:
 # Dense retriever
 # ---------------------------------------------------------------------------
 
+
 class TestDenseRetriever:
     """Tests for FAISS-based dense retrieval."""
 
     @pytest.fixture
     def sample_corpus(self):
         return [
-            {"passage_id": "p1", "text": "Michael Jordan was born in 1963 in Brooklyn.", "source": "doc_1"},
-            {"passage_id": "p2", "text": "Michael Jordan is a retired basketball player.", "source": "doc_2"},
+            {
+                "passage_id": "p1",
+                "text": "Michael Jordan was born in 1963 in Brooklyn.",
+                "source": "doc_1",
+            },
+            {
+                "passage_id": "p2",
+                "text": "Michael Jordan is a retired basketball player.",
+                "source": "doc_2",
+            },
             {"passage_id": "p3", "text": "The capital of France is Paris.", "source": "doc_3"},
-            {"passage_id": "p4", "text": "Michael B. Jordan is an American actor.", "source": "doc_4"},
-            {"passage_id": "p5", "text": "Basketball was invented by James Naismith.", "source": "doc_5"},
+            {
+                "passage_id": "p4",
+                "text": "Michael B. Jordan is an American actor.",
+                "source": "doc_4",
+            },
+            {
+                "passage_id": "p5",
+                "text": "Basketball was invented by James Naismith.",
+                "source": "doc_5",
+            },
         ]
 
     @pytest.mark.slow
@@ -72,7 +91,10 @@ class TestDenseRetriever:
         assert len(result.retrieved_passages) == 3
         assert result.retrieved_passages[0].rank == 1
         # The top result should be about MJ's birth
-        assert "1963" in result.retrieved_passages[0].text or "Jordan" in result.retrieved_passages[0].text
+        assert (
+            "1963" in result.retrieved_passages[0].text
+            or "Jordan" in result.retrieved_passages[0].text
+        )
 
     @pytest.mark.slow
     def test_dense_retriever_scores_are_sorted(self, sample_corpus):
@@ -99,17 +121,34 @@ class TestDenseRetriever:
 # Sparse (BM25) retriever
 # ---------------------------------------------------------------------------
 
+
 class TestSparseRetriever:
     """Tests for BM25-based sparse retrieval."""
 
     @pytest.fixture
     def sample_corpus(self):
         return [
-            {"passage_id": "p1", "text": "Michael Jordan was born in 1963 in Brooklyn.", "source": "doc_1"},
-            {"passage_id": "p2", "text": "Michael Jordan is a retired basketball player.", "source": "doc_2"},
+            {
+                "passage_id": "p1",
+                "text": "Michael Jordan was born in 1963 in Brooklyn.",
+                "source": "doc_1",
+            },
+            {
+                "passage_id": "p2",
+                "text": "Michael Jordan is a retired basketball player.",
+                "source": "doc_2",
+            },
             {"passage_id": "p3", "text": "The capital of France is Paris.", "source": "doc_3"},
-            {"passage_id": "p4", "text": "Michael B. Jordan is an American actor.", "source": "doc_4"},
-            {"passage_id": "p5", "text": "Basketball was invented by James Naismith.", "source": "doc_5"},
+            {
+                "passage_id": "p4",
+                "text": "Michael B. Jordan is an American actor.",
+                "source": "doc_4",
+            },
+            {
+                "passage_id": "p5",
+                "text": "Basketball was invented by James Naismith.",
+                "source": "doc_5",
+            },
         ]
 
     def test_sparse_retriever_creates(self):
@@ -154,17 +193,34 @@ class TestSparseRetriever:
 # Hybrid retriever
 # ---------------------------------------------------------------------------
 
+
 class TestHybridRetriever:
     """Tests for hybrid (dense + sparse) retrieval with score fusion."""
 
     @pytest.fixture
     def sample_corpus(self):
         return [
-            {"passage_id": "p1", "text": "Michael Jordan was born in 1963 in Brooklyn.", "source": "doc_1"},
-            {"passage_id": "p2", "text": "Michael Jordan is a retired basketball player.", "source": "doc_2"},
+            {
+                "passage_id": "p1",
+                "text": "Michael Jordan was born in 1963 in Brooklyn.",
+                "source": "doc_1",
+            },
+            {
+                "passage_id": "p2",
+                "text": "Michael Jordan is a retired basketball player.",
+                "source": "doc_2",
+            },
             {"passage_id": "p3", "text": "The capital of France is Paris.", "source": "doc_3"},
-            {"passage_id": "p4", "text": "Michael B. Jordan is an American actor.", "source": "doc_4"},
-            {"passage_id": "p5", "text": "Basketball was invented by James Naismith.", "source": "doc_5"},
+            {
+                "passage_id": "p4",
+                "text": "Michael B. Jordan is an American actor.",
+                "source": "doc_4",
+            },
+            {
+                "passage_id": "p5",
+                "text": "Basketball was invented by James Naismith.",
+                "source": "doc_5",
+            },
         ]
 
     @pytest.mark.slow
@@ -217,6 +273,7 @@ class TestHybridRetriever:
 # Retriever factory
 # ---------------------------------------------------------------------------
 
+
 class TestRetrieverFactory:
     """Tests for the retriever factory that instantiates by config."""
 
@@ -226,6 +283,7 @@ class TestRetrieverFactory:
 
         retriever = create_retriever(retriever_type="dense", dense_model="BAAI/bge-base-en-v1.5")
         from rag_baseline.retrieval.dense import DenseRetriever
+
         assert isinstance(retriever, DenseRetriever)
 
     def test_factory_creates_sparse(self):
@@ -233,6 +291,7 @@ class TestRetrieverFactory:
 
         retriever = create_retriever(retriever_type="sparse")
         from rag_baseline.retrieval.sparse import SparseRetriever
+
         assert isinstance(retriever, SparseRetriever)
 
     @pytest.mark.slow
@@ -241,6 +300,7 @@ class TestRetrieverFactory:
 
         retriever = create_retriever(retriever_type="hybrid", dense_model="BAAI/bge-base-en-v1.5")
         from rag_baseline.retrieval.hybrid import HybridRetriever
+
         assert isinstance(retriever, HybridRetriever)
 
     def test_factory_creates_none(self):

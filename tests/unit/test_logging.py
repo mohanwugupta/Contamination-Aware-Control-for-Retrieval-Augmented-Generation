@@ -4,7 +4,6 @@ Logger must save all intermediate artifacts in JSONL format.
 """
 
 import json
-import pytest
 
 
 class TestArtifactLogger:
@@ -14,12 +13,12 @@ class TestArtifactLogger:
         from rag_baseline.logging.artifact_logger import ArtifactLogger
 
         output_dir = tmp_path / "run_001"
-        logger = ArtifactLogger(output_dir=str(output_dir))
+        ArtifactLogger(output_dir=str(output_dir))
         assert output_dir.exists()
 
     def test_logger_saves_inputs(self, tmp_path):
         from rag_baseline.logging.artifact_logger import ArtifactLogger
-        from rag_baseline.schemas.input import InputExample, GoldAnswer
+        from rag_baseline.schemas.input import GoldAnswer, InputExample
 
         logger = ArtifactLogger(output_dir=str(tmp_path / "run_001"))
 
@@ -47,8 +46,11 @@ class TestArtifactLogger:
         logger = ArtifactLogger(output_dir=str(tmp_path / "run_001"))
 
         passage = RetrievedPassage(
-            passage_id="p1", text="text", source="doc_1",
-            retrieval_score=5.0, rank=1,
+            passage_id="p1",
+            text="text",
+            source="doc_1",
+            retrieval_score=5.0,
+            rank=1,
         )
         output = RetrievalOutput(example_id="ex_1", retrieved_passages=[passage])
         logger.log_retrieval(output)
@@ -65,7 +67,9 @@ class TestArtifactLogger:
 
         parsed = ParsedOutput(single_answer="A", multi_answers=None, unknown=False)
         gen = GenerationOutput(
-            example_id="ex_1", raw_model_output="A", parsed_output=parsed,
+            example_id="ex_1",
+            raw_model_output="A",
+            parsed_output=parsed,
         )
         logger.log_prediction(gen)
         logger.flush()
@@ -79,11 +83,14 @@ class TestArtifactLogger:
 
         logger = ArtifactLogger(output_dir=str(tmp_path / "run_001"))
 
-        metrics = Metrics(exact_match=True, normalized_match=True,
-                          multi_answer_score=None, answer_category=None)
+        metrics = Metrics(
+            exact_match=True, normalized_match=True, multi_answer_score=None, answer_category=None
+        )
         ev = EvaluationOutput(
-            example_id="ex_1", dataset="nq_open",
-            baseline_name="test", metrics=metrics,
+            example_id="ex_1",
+            dataset="nq_open",
+            baseline_name="test",
+            metrics=metrics,
         )
         logger.log_evaluation(ev)
         logger.flush()
@@ -93,14 +100,18 @@ class TestArtifactLogger:
 
     def test_logger_saves_prompts(self, tmp_path):
         from rag_baseline.logging.artifact_logger import ArtifactLogger
-        from rag_baseline.schemas.prompt import PromptRecord, PromptMetadata
+        from rag_baseline.schemas.prompt import PromptMetadata, PromptRecord
 
         logger = ArtifactLogger(output_dir=str(tmp_path / "run_001"))
 
         meta = PromptMetadata(model_name="m", temperature=0.0, max_context_passages=4)
         record = PromptRecord(
-            example_id="ex_1", baseline_name="b", answer_mode="single",
-            used_passage_ids=["p1"], prompt_text="prompt", prompt_metadata=meta,
+            example_id="ex_1",
+            baseline_name="b",
+            answer_mode="single",
+            used_passage_ids=["p1"],
+            prompt_text="prompt",
+            prompt_metadata=meta,
         )
         logger.log_prompt(record)
         logger.flush()
@@ -109,17 +120,23 @@ class TestArtifactLogger:
         assert prompts_file.exists()
 
     def test_logger_saves_run_config(self, tmp_path):
-        from rag_baseline.logging.artifact_logger import ArtifactLogger
         from rag_baseline.config.schema import RunConfig
+        from rag_baseline.logging.artifact_logger import ArtifactLogger
 
         logger = ArtifactLogger(output_dir=str(tmp_path / "run_001"))
 
         cfg = RunConfig(
-            dataset="nq_open", split="dev", retriever_type="hybrid",
-            reranker_enabled=True, generator_model="m",
-            prompt_family="single_answer", top_k_retrieval=10,
-            top_k_after_rerank=5, context_strategy="full",
-            answer_mode="single", output_dir=str(tmp_path / "run_001"),
+            dataset="nq_open",
+            split="dev",
+            retriever_type="hybrid",
+            reranker_enabled=True,
+            generator_model="m",
+            prompt_family="single_answer",
+            top_k_retrieval=10,
+            top_k_after_rerank=5,
+            context_strategy="full",
+            answer_mode="single",
+            output_dir=str(tmp_path / "run_001"),
             random_seed=42,
         )
         logger.save_run_config(cfg)

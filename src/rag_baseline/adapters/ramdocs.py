@@ -43,9 +43,7 @@ class RAMDocsAdapter(BaseAdapter):
         ds = _load_hf_split(self.HF_DATASET_ID, split, f"ramdocs_{split}")
         return self.load_from_dicts(list(ds), split=split)
 
-    def load_from_dicts(
-        self, rows: list[dict], split: str = "test"
-    ) -> list[InputExample]:
+    def load_from_dicts(self, rows: list[dict], split: str = "test") -> list[InputExample]:
         """Normalize raw RAMDocs dicts into InputExamples.
 
         Args:

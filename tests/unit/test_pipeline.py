@@ -6,12 +6,13 @@ parse → evaluate → log
 """
 
 import json
-import pytest
 
+import pytest
 
 # ---------------------------------------------------------------------------
 # Shared test helpers
 # ---------------------------------------------------------------------------
+
 
 class _MockReranker:
     """Deterministic mock reranker that reverses passage order.
@@ -22,7 +23,7 @@ class _MockReranker:
     """
 
     def rerank(self, query: str, passages, example_id: str = ""):
-        from rag_baseline.schemas.rerank import RerankOutput, RerankedPassage
+        from rag_baseline.schemas.rerank import RerankedPassage, RerankOutput
 
         reversed_passages = list(reversed(passages))
         reranked = [
@@ -44,7 +45,7 @@ class TestPipelineRunner:
 
     @pytest.fixture
     def sample_examples(self):
-        from rag_baseline.schemas.input import InputExample, GoldAnswer
+        from rag_baseline.schemas.input import GoldAnswer, InputExample
 
         return [
             InputExample(
@@ -66,17 +67,33 @@ class TestPipelineRunner:
     @pytest.fixture
     def sample_corpus(self):
         return [
-            {"passage_id": "p1", "text": "Michael Jordan was born in 1963 in Brooklyn.", "source": "doc_1"},
-            {"passage_id": "p2", "text": "Michael Jordan is a retired basketball player.", "source": "doc_2"},
+            {
+                "passage_id": "p1",
+                "text": "Michael Jordan was born in 1963 in Brooklyn.",
+                "source": "doc_1",
+            },
+            {
+                "passage_id": "p2",
+                "text": "Michael Jordan is a retired basketball player.",
+                "source": "doc_2",
+            },
             {"passage_id": "p3", "text": "The capital of France is Paris.", "source": "doc_3"},
-            {"passage_id": "p4", "text": "Michael B. Jordan is an American actor.", "source": "doc_4"},
-            {"passage_id": "p5", "text": "Basketball was invented by James Naismith.", "source": "doc_5"},
+            {
+                "passage_id": "p4",
+                "text": "Michael B. Jordan is an American actor.",
+                "source": "doc_4",
+            },
+            {
+                "passage_id": "p5",
+                "text": "Basketball was invented by James Naismith.",
+                "source": "doc_5",
+            },
         ]
 
     def test_pipeline_runs_end_to_end(self, tmp_path, sample_examples, sample_corpus):
-        from rag_baseline.pipeline.runner import PipelineRunner
-        from rag_baseline.generation.vllm_generator import MockGenerator
         from rag_baseline.config.schema import RunConfig
+        from rag_baseline.generation.vllm_generator import MockGenerator
+        from rag_baseline.pipeline.runner import PipelineRunner
 
         config = RunConfig(
             dataset="nq_open",
@@ -103,9 +120,9 @@ class TestPipelineRunner:
         assert len(results) == 2
 
     def test_pipeline_produces_artifacts(self, tmp_path, sample_examples, sample_corpus):
-        from rag_baseline.pipeline.runner import PipelineRunner
-        from rag_baseline.generation.vllm_generator import MockGenerator
         from rag_baseline.config.schema import RunConfig
+        from rag_baseline.generation.vllm_generator import MockGenerator
+        from rag_baseline.pipeline.runner import PipelineRunner
 
         config = RunConfig(
             dataset="nq_open",
@@ -138,9 +155,9 @@ class TestPipelineRunner:
         assert (run_dir / "summary_metrics.json").exists()
 
     def test_pipeline_with_reduced_context(self, tmp_path, sample_examples, sample_corpus):
-        from rag_baseline.pipeline.runner import PipelineRunner
-        from rag_baseline.generation.vllm_generator import MockGenerator
         from rag_baseline.config.schema import RunConfig
+        from rag_baseline.generation.vllm_generator import MockGenerator
+        from rag_baseline.pipeline.runner import PipelineRunner
 
         config = RunConfig(
             dataset="nq_open",
@@ -160,7 +177,7 @@ class TestPipelineRunner:
         generator = MockGenerator(default_response="1963")
         runner = PipelineRunner(config=config, generator=generator)
         runner.index_corpus(sample_corpus)
-        results = runner.run(sample_examples)
+        runner.run(sample_examples)
 
         # Check that prompts used reduced context
         prompts_file = tmp_path / "run_reduced" / "prompts.jsonl"
@@ -171,9 +188,9 @@ class TestPipelineRunner:
             assert len(record["used_passage_ids"]) <= 2
 
     def test_pipeline_llm_only(self, tmp_path, sample_examples):
-        from rag_baseline.pipeline.runner import PipelineRunner
-        from rag_baseline.generation.vllm_generator import MockGenerator
         from rag_baseline.config.schema import RunConfig
+        from rag_baseline.generation.vllm_generator import MockGenerator
+        from rag_baseline.pipeline.runner import PipelineRunner
 
         config = RunConfig(
             dataset="nq_open",
@@ -197,9 +214,9 @@ class TestPipelineRunner:
         assert len(results) == 2
 
     def test_pipeline_summary_metrics(self, tmp_path, sample_examples, sample_corpus):
-        from rag_baseline.pipeline.runner import PipelineRunner
-        from rag_baseline.generation.vllm_generator import MockGenerator
         from rag_baseline.config.schema import RunConfig
+        from rag_baseline.generation.vllm_generator import MockGenerator
+        from rag_baseline.pipeline.runner import PipelineRunner
 
         config = RunConfig(
             dataset="nq_open",
@@ -232,6 +249,7 @@ class TestPipelineRunner:
 # Reranker wiring + top_k_after_rerank enforcement tests
 # ---------------------------------------------------------------------------
 
+
 class TestPipelineReranker:
     """Tests that the reranker is actually invoked and top_k_after_rerank is
     enforced regardless of context_strategy.
@@ -245,7 +263,7 @@ class TestPipelineReranker:
 
     @pytest.fixture
     def sample_examples(self):
-        from rag_baseline.schemas.input import InputExample, GoldAnswer
+        from rag_baseline.schemas.input import GoldAnswer, InputExample
 
         return [
             InputExample(
@@ -268,16 +286,21 @@ class TestPipelineReranker:
     @pytest.fixture
     def stub_retriever(self):
         """Dense-like stub retriever that avoids the rank_bm25 dependency."""
+
         class _StubRetriever:
             def index(self, corpus):
                 self._corpus = corpus
 
             def retrieve(self, query, top_k):
-                from rag_baseline.schemas.retrieval import RetrievedPassage, RetrievalOutput
+                from rag_baseline.schemas.retrieval import RetrievalOutput, RetrievedPassage
+
                 passages = [
                     RetrievedPassage(
-                        passage_id=p["passage_id"], text=p["text"],
-                        source=p.get("source", ""), retrieval_score=float(top_k - i), rank=i + 1,
+                        passage_id=p["passage_id"],
+                        text=p["text"],
+                        source=p.get("source", ""),
+                        retrieval_score=float(top_k - i),
+                        rank=i + 1,
                     )
                     for i, p in enumerate(self._corpus[:top_k])
                 ]
@@ -285,15 +308,17 @@ class TestPipelineReranker:
 
         return _StubRetriever()
 
-    def test_reranker_is_invoked_when_enabled(self, tmp_path, sample_examples, large_corpus, stub_retriever):
+    def test_reranker_is_invoked_when_enabled(
+        self, tmp_path, sample_examples, large_corpus, stub_retriever
+    ):
         """Bug 1: runner must call the reranker when reranker_enabled=True.
 
         We inject a mock reranker that records calls.  If the runner never
         calls it, the assertion fails.
         """
-        from rag_baseline.pipeline.runner import PipelineRunner
-        from rag_baseline.generation.vllm_generator import MockGenerator
         from rag_baseline.config.schema import RunConfig
+        from rag_baseline.generation.vllm_generator import MockGenerator
+        from rag_baseline.pipeline.runner import PipelineRunner
 
         call_log = []
 
@@ -341,9 +366,9 @@ class TestPipelineReranker:
         assemble_context, so all top_k_retrieval (10) passages ended up in the
         prompt regardless of top_k_after_rerank.
         """
-        from rag_baseline.pipeline.runner import PipelineRunner
-        from rag_baseline.generation.vllm_generator import MockGenerator
         from rag_baseline.config.schema import RunConfig
+        from rag_baseline.generation.vllm_generator import MockGenerator
+        from rag_baseline.pipeline.runner import PipelineRunner
 
         config = RunConfig(
             dataset="nq_open",
@@ -385,9 +410,9 @@ class TestPipelineReranker:
         """Without a reranker, context_strategy='full' correctly uses all
         top_k_retrieval passages (no spurious pruning introduced by the fix).
         """
-        from rag_baseline.pipeline.runner import PipelineRunner
-        from rag_baseline.generation.vllm_generator import MockGenerator
         from rag_baseline.config.schema import RunConfig
+        from rag_baseline.generation.vllm_generator import MockGenerator
+        from rag_baseline.pipeline.runner import PipelineRunner
 
         config = RunConfig(
             dataset="nq_open",
@@ -418,11 +443,13 @@ class TestPipelineReranker:
             # Without reranker, all retrieved passages should be in the prompt
             assert len(record["used_passage_ids"]) == config.top_k_retrieval
 
-    def test_reranker_artifact_logged(self, tmp_path, sample_examples, large_corpus, stub_retriever):
+    def test_reranker_artifact_logged(
+        self, tmp_path, sample_examples, large_corpus, stub_retriever
+    ):
         """When reranking is performed, a reranks.jsonl artifact must be saved."""
-        from rag_baseline.pipeline.runner import PipelineRunner
-        from rag_baseline.generation.vllm_generator import MockGenerator
         from rag_baseline.config.schema import RunConfig
+        from rag_baseline.generation.vllm_generator import MockGenerator
+        from rag_baseline.pipeline.runner import PipelineRunner
 
         config = RunConfig(
             dataset="nq_open",
@@ -452,4 +479,3 @@ class TestPipelineReranker:
         assert reranks_file.exists(), "reranks.jsonl must be written when reranking is used"
         lines = reranks_file.read_text().strip().splitlines()
         assert len(lines) == len(sample_examples)
-

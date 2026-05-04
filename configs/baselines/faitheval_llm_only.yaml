@@ -1,13 +1,24 @@
+﻿# FaithEval -- LLM-Only (no retrieval)
+# Control run for faithfulness benchmark (unanswerable/inconsistent/counterfactual).
+# FaithEval bundles context per example; retriever is not used here.
+
+# --- dataset ---
 dataset: faitheval
 split: test
+
+# --- retrieval ---
 retriever_type: none
 reranker_enabled: false
-generator_model: Qwen/Qwen2.5-32B-Instruct
-prompt_family: single_answer
 top_k_retrieval: 0
 top_k_after_rerank: 0
 context_strategy: none
+
+# --- generation ---
+generator_model: Qwen/Qwen2.5-32B-Instruct
+prompt_family: single_answer
 answer_mode: single
+vllm_base_url: http://localhost:8000/v1
+
+# --- output ---
 output_dir: outputs/faitheval_llm_only
 random_seed: 42
-vllm_base_url: http://localhost:8000/v1

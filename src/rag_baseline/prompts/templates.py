@@ -10,7 +10,6 @@ All prompts are deterministic and contain no hidden heuristics.
 
 from __future__ import annotations
 
-
 # --- Prompt family A: single-answer grounded QA ---
 SINGLE_ANSWER_TEMPLATE = """\
 Answer the following question based on the provided documents. \
@@ -93,7 +92,8 @@ def render_prompt(
     if answer_mode == "single":
         if has_context:
             return SINGLE_ANSWER_TEMPLATE.format(
-                context_block=context_block, question=question,
+                context_block=context_block,
+                question=question,
             )
         else:
             return SINGLE_ANSWER_NO_CONTEXT_TEMPLATE.format(question=question)
@@ -101,7 +101,8 @@ def render_prompt(
     elif answer_mode == "multi":
         if has_context:
             return MULTI_ANSWER_TEMPLATE.format(
-                context_block=context_block, question=question,
+                context_block=context_block,
+                question=question,
             )
         else:
             return MULTI_ANSWER_NO_CONTEXT_TEMPLATE.format(question=question)
@@ -109,7 +110,8 @@ def render_prompt(
     elif answer_mode == "unknown_or_abstain":
         if has_context:
             return UNKNOWN_COMPATIBLE_TEMPLATE.format(
-                context_block=context_block, question=question,
+                context_block=context_block,
+                question=question,
             )
         else:
             return UNKNOWN_COMPATIBLE_NO_CONTEXT_TEMPLATE.format(question=question)

@@ -11,7 +11,6 @@ import re
 
 from rag_baseline.schemas.generation import ParsedOutput
 
-
 # Keywords that indicate the model is abstaining / saying unknown
 UNKNOWN_KEYWORDS = [
     "unknown",

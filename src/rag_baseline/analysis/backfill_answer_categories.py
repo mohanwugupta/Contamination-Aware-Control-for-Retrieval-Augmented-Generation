@@ -21,6 +21,7 @@ Usage
     # or with a custom outputs root:
     python src/rag_baseline/analysis/backfill_answer_categories.py --output-dir outputs
 """
+
 from __future__ import annotations
 
 import argparse
@@ -99,14 +100,19 @@ def backfill_run(run_dir: Path, dry_run: bool = False) -> dict[str, int]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Backfill 'wrong' vs 'no_answer' in evaluations.jsonl")
-    parser.add_argument(
-        "--output-dir", "-i", default="outputs",
-        help="Root outputs directory containing run subdirectories (default: outputs)"
+    parser = argparse.ArgumentParser(
+        description="Backfill 'wrong' vs 'no_answer' in evaluations.jsonl"
     )
     parser.add_argument(
-        "--dry-run", action="store_true",
-        help="Report what would change without modifying any files"
+        "--output-dir",
+        "-i",
+        default="outputs",
+        help="Root outputs directory containing run subdirectories (default: outputs)",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Report what would change without modifying any files",
     )
     args = parser.parse_args()
 

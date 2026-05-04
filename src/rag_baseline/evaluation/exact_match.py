@@ -49,9 +49,7 @@ def compute_exact_match(prediction: str, gold: list[str]) -> Metrics:
 
     exact = any(prediction == g for g in gold)
     normalized = any(
-        _normalize_answer(g) in norm_pred
-        for g in gold
-        if g  # skip empty gold strings
+        _normalize_answer(g) in norm_pred for g in gold if g  # skip empty gold strings
     )
     return Metrics(
         exact_match=exact,

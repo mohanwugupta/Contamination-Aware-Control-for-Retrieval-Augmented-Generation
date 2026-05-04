@@ -16,7 +16,6 @@ Three separate HuggingFace datasets (schemas differ between subtasks):
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Sample data matching HuggingFace FaithEval schema
 # ---------------------------------------------------------------------------

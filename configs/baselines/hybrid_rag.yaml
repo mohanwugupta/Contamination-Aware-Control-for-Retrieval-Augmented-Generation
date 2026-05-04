@@ -1,16 +1,25 @@
-# Baseline B — Hybrid RAG (PRD 1 §5)
-# Hybrid lexical + dense retrieval, no reranking, full context
+﻿# Baseline B -- Hybrid RAG
+# Hybrid lexical + dense retrieval, no reranking, full retrieved context.
+# Minimum "respectable" RAG baseline; BM25 + dense for better recall.
+
+# --- dataset ---
 dataset: ambigdocs
 split: validation
+
+# --- retrieval ---
 retriever_type: hybrid
 reranker_enabled: false
-generator_model: Qwen/Qwen2.5-32B-Instruct
-prompt_family: multi_answer
 top_k_retrieval: 10
 top_k_after_rerank: 10
 context_strategy: full
+dense_model: BAAI/bge-base-en-v1.5
+
+# --- generation ---
+generator_model: Qwen/Qwen2.5-32B-Instruct
+prompt_family: multi_answer
 answer_mode: multi
+vllm_base_url: http://localhost:8000/v1
+
+# --- output ---
 output_dir: outputs/hybrid_rag
 random_seed: 42
-dense_model: BAAI/bge-base-en-v1.5
-vllm_base_url: http://localhost:8000/v1

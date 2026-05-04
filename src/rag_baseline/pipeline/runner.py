@@ -53,6 +53,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class _WorkItem:
     """Intermediate state produced by Pass 1 and consumed by Pass 3."""
+
     example: InputExample
     prompt_record: PromptRecord
     prompt_text: str
@@ -127,9 +128,7 @@ class PipelineRunner:
         # Pass 1 — CPU: retrieve → rerank → assemble → render prompt
         # ------------------------------------------------------------------
         logger.info("Pass 1/3 — preparing %d examples (retrieval + prompts)", len(examples))
-        work_items: list[_WorkItem] = [
-            self._prepare_example(example) for example in examples
-        ]
+        work_items: list[_WorkItem] = [self._prepare_example(example) for example in examples]
 
         # ------------------------------------------------------------------
         # Pass 2 — GPU: generate all prompts concurrently
@@ -142,16 +141,20 @@ class PipelineRunner:
             effective_workers,
         )
         with ThreadPoolExecutor(max_workers=effective_workers) as pool:
-            gen_results: list[GenerationResult] = list(
-                pool.map(self.generator.generate, prompts)
-            )
+            gen_results: list[GenerationResult] = list(pool.map(self.generator.generate, prompts))
 
         # ------------------------------------------------------------------
         # Pass 3 — CPU: parse → evaluate → log (preserves input order)
         # ------------------------------------------------------------------
         logger.info("Pass 3/3 — parsing and evaluating %d results", len(gen_results))
         results: list[EvaluationOutput] = []
-        eval_counts: dict[str, float] = {"total": 0, "normalized_match": 0, "exact_match": 0, "multi_answer_sum": 0, "multi_answer_count": 0}
+        eval_counts: dict[str, float] = {
+            "total": 0,
+            "normalized_match": 0,
+            "exact_match": 0,
+            "multi_answer_sum": 0,
+            "multi_answer_count": 0,
+        }
 
         for item, gen_result in zip(work_items, gen_results):
             eval_output = self._finalize_example(item, gen_result)
@@ -222,8 +225,11 @@ class PipelineRunner:
         assembled = assemble_context(
             passages=context_passages,
             strategy=self.config.context_strategy,
-            max_passages=self.config.top_k_after_rerank
-            if self.config.context_strategy == "reduced" else None,
+            max_passages=(
+                self.config.top_k_after_rerank
+                if self.config.context_strategy == "reduced"
+                else None
+            ),
         )
 
         # Step 5: Build prompt
@@ -287,18 +293,24 @@ class PipelineRunner:
         """Persist summary metrics to disk."""
         summary = {
             "total_examples": total,
-            "normalized_match_rate": eval_counts.get("normalized_match", 0) / total if total > 0 else 0,
+            "normalized_match_rate": (
+                eval_counts.get("normalized_match", 0) / total if total > 0 else 0
+            ),
             "exact_match_rate": eval_counts.get("exact_match", 0) / total if total > 0 else 0,
         }
-        
+
         if eval_counts.get("multi_answer_count", 0) > 0:
-            summary["multi_answer_score"] = eval_counts["multi_answer_sum"] / eval_counts["multi_answer_count"]
-            
-        summary.update({
-            "baseline_name": self.config.baseline_name,
-            "dataset": self.config.dataset,
-            "split": self.config.split,
-        })
+            summary["multi_answer_score"] = (
+                eval_counts["multi_answer_sum"] / eval_counts["multi_answer_count"]
+            )
+
+        summary.update(
+            {
+                "baseline_name": self.config.baseline_name,
+                "dataset": self.config.dataset,
+                "split": self.config.split,
+            }
+        )
         self.logger.save_summary_metrics(summary)
 
     # ------------------------------------------------------------------

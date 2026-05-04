@@ -16,7 +16,7 @@ import os
 import threading
 import time
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -89,8 +89,8 @@ class VLLMGenerator(BaseGenerator):
 
         Returns ``True`` if the server responds on ``/v1/models``.
         """
-        import urllib.request
         import urllib.error
+        import urllib.request
 
         # Strip "/v1" suffix to get the base server URL for health endpoint
         server_base = self.base_url.rstrip("/")
@@ -116,9 +116,7 @@ class VLLMGenerator(BaseGenerator):
                 return
             time.sleep(poll_interval)
             elapsed += poll_interval
-        raise ConnectionError(
-            f"vLLM server at {self.base_url} not ready after {timeout:.0f}s"
-        )
+        raise ConnectionError(f"vLLM server at {self.base_url} not ready after {timeout:.0f}s")
 
     # -- client -------------------------------------------------------------
 
@@ -168,7 +166,9 @@ class VLLMGenerator(BaseGenerator):
                     finish_reason=choice.finish_reason or "",
                     usage={
                         "prompt_tokens": response.usage.prompt_tokens if response.usage else 0,
-                        "completion_tokens": response.usage.completion_tokens if response.usage else 0,
+                        "completion_tokens": (
+                            response.usage.completion_tokens if response.usage else 0
+                        ),
                     },
                 )
             except Exception as exc:
@@ -247,8 +247,7 @@ class InProcessVLLMGenerator(BaseGenerator):
         missing = [f for f in required if not (model_dir / f).exists()]
         if missing:
             raise FileNotFoundError(
-                f"Model directory incomplete — missing: {missing}\n"
-                f"Check: {path}"
+                f"Model directory incomplete — missing: {missing}\n" f"Check: {path}"
             )
 
     # -- lazy initialization ------------------------------------------------

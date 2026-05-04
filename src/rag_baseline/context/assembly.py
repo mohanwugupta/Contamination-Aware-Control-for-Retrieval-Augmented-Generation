@@ -6,7 +6,7 @@ string for the generator. Supports full, reduced, and none strategies.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from rag_baseline.schemas.rerank import RerankedPassage
 from rag_baseline.schemas.retrieval import RetrievedPassage

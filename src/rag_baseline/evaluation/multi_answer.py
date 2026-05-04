@@ -46,11 +46,8 @@ def compute_multi_answer_score(
 
     # Recall: how many gold answers are covered
     # A gold answer is covered if it appears as a substring in ANY of the normalized predictions
-    covered = sum(
-        1 for g in normalized_golds 
-        if g and any(g in p for p in normalized_preds)
-    )
-    
+    covered = sum(1 for g in normalized_golds if g and any(g in p for p in normalized_preds))
+
     # Avoid division by zero if normalized_golds is empty or only contains empty strings
     valid_golds_count = len([g for g in normalized_golds if g])
     if valid_golds_count == 0:
@@ -62,7 +59,7 @@ def compute_multi_answer_score(
     # A prediction is "merged" if it covers >1 distinct gold answer
     def _count_golds_in_pred(pred: str) -> int:
         return sum(1 for g in normalized_golds if g and g in pred)
-        
+
     is_merged = any(_count_golds_in_pred(p) > 1 for p in normalized_preds)
 
     # Determine category
@@ -81,13 +78,13 @@ def compute_multi_answer_score(
         # downstream error analysis, so we label non-empty zero-recall outputs
         # as 'wrong'.
         category = "wrong"
-        
-    # Check for "ambiguous" - model provided fewer answers than required, or didn't disambiguate
-    # If the score is partial or merged, it inherently shows the model was ambiguous or confused.
-    # We can refine this: if it didn't find all but found some, or merged them, we map it to ambiguous/merged.
-    # The AmbigDocs paper uses 'ambiguous' for returning an ambiguous single answer when multiple exist.
+
+    # Check for "ambiguous" — model provided fewer answers than required, or didn't disambiguate.
+    # If the score is partial or merged, the model was ambiguous or confused. If it found some
+    # answers but not all (or merged them), we map to ambiguous/merged. The AmbigDocs paper uses
+    # 'ambiguous' for returning a single ambiguous answer when multiple distinct answers exist.
     if category == "partial" and len(predictions) == 1 and valid_golds_count > 1:
-         category = "ambiguous"
+        category = "ambiguous"
 
     return Metrics(
         exact_match=None,

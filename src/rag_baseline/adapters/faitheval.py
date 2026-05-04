@@ -44,9 +44,7 @@ class FaithEvalAdapter(BaseAdapter):
 
     def __init__(self, subtask: str = "all") -> None:
         if subtask not in VALID_SUBTASKS:
-            raise ValueError(
-                f"Invalid subtask '{subtask}'. Must be one of {VALID_SUBTASKS}"
-            )
+            raise ValueError(f"Invalid subtask '{subtask}'. Must be one of {VALID_SUBTASKS}")
         self._subtask = subtask
         self._corpus: list[dict] | None = None
         self._example_contexts: dict[str, str] = {}
@@ -103,9 +101,7 @@ class FaithEvalAdapter(BaseAdapter):
             )
             return self.load_from_dicts(list(ds), split=split)
 
-    def load_from_dicts(
-        self, rows: list[dict], split: str = "test"
-    ) -> list[InputExample]:
+    def load_from_dicts(self, rows: list[dict], split: str = "test") -> list[InputExample]:
         """Normalize raw FaithEval dicts into InputExamples.
 
         Uses the current subtask setting to determine gold answer semantics.
@@ -139,15 +135,9 @@ class FaithEvalAdapter(BaseAdapter):
             Combined list of InputExample instances across all subtasks.
         """
         examples: list[InputExample] = []
-        examples.extend(
-            self._normalize_rows(unanswerable, subtask="unanswerable", split=split)
-        )
-        examples.extend(
-            self._normalize_rows(inconsistent, subtask="inconsistent", split=split)
-        )
-        examples.extend(
-            self._normalize_rows(counterfactual, subtask="counterfactual", split=split)
-        )
+        examples.extend(self._normalize_rows(unanswerable, subtask="unanswerable", split=split))
+        examples.extend(self._normalize_rows(inconsistent, subtask="inconsistent", split=split))
+        examples.extend(self._normalize_rows(counterfactual, subtask="counterfactual", split=split))
         return examples
 
     def get_corpus(self) -> list[dict] | None:
@@ -176,9 +166,7 @@ class FaithEvalAdapter(BaseAdapter):
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _normalize_rows(
-        self, rows: list[dict], *, subtask: str, split: str
-    ) -> list[InputExample]:
+    def _normalize_rows(self, rows: list[dict], *, subtask: str, split: str) -> list[InputExample]:
         """Normalize a list of rows for a specific subtask."""
         abbrev = _SUBTASK_ABBREV[subtask]
         examples: list[InputExample] = []
